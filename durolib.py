@@ -14,6 +14,7 @@ PJD 25 Jul 2013     - Updated fixVarUnits function to print and log changes
 PJD  5 Aug 2013     - Added fitPolynomial function following Pete G's code example
 PJD  9 Aug 2013     - Added writePacked function
 PJD  9 Aug 2013     - Added keyboard function
+PJD 22 Aug 2013     - Added setTimeBoundsYearly() to fixInterpAxis
                     - TODO: Consider implementing multivariate polynomial regression:
                       https://github.com/mrocklin/multipolyfit
 
@@ -25,7 +26,7 @@ This library contains all functions written to replicate matlab functionality in
 ## Import common modules ##
 import cdat_info,code,datetime,gc,os,pytz,sys,inspect
 import cdms2 as cdm
-#import cdutil as cdu
+import cdutil as cdu
 #import genutil as genu
 #import matplotlib as plt
 import MV2 as mv
@@ -135,6 +136,7 @@ def fixInterpAxis(var):
     t = cdm.createAxis(tind,id='time')
     t.units = 'years since 0-01-01 0:0:0.0'
     t.calendar = var.getTime().calendar
+    cdu.times.setTimeBoundsYearly(t) ; # Explicitly set time bounds to yearly
     var.setAxis(0,t)
     return var
 
