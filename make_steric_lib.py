@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import gc,os,sys
+import gc,os#,sys
 import cdms2 as cdm
 import cdutil as cdu
 import MV2 as mv
@@ -69,6 +69,7 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - PJD  8 Aug 2013 - FIXED: removed depth variable unit edits - not all inputs are depth (m)
     - PJD 15 Aug 2013 - Increased interpolated field resolution [200,300,500,700,1000,1500,1800,2000] - [5,10,20,30,40,50,75,100,125,150,200, ...]
     - PJD 18 Aug 2013 - AR5 hard coded rho=1020,cp=4187 == 4.3e6 vs Ishii 1970 rho.mean=1024,cp.mean=3922 == 4.1e6 ~5% too high
+    - PJD 13 Jan 2014 - Corrected steric_height_anom and steric_height_thermo_anom to true anomaly fields, needed to remove climatology
     - TODO: Query Charles on why *.name attributes are propagating
     - TODO: validate outputs and compare to matlab versions - 10e-7 errors.
     """
@@ -147,14 +148,16 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
 
     # Full steric - steric_height
     tt                          = map(array,(temp+temp_chg))
-    steric_height_anom          = sw.gpan(np.array(ss),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
-    del(ss) ; gc.collect()
+    tmp                         = sw.gpan(np.array(ss),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    steric_height_anom          = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    del(ss,tmp) ; gc.collect()
     
     # Thermosteric - rho,cp,steric_height
     rho_thermo                  = sw.dens(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units kg m-3 
     cp_thermo                   = sw.cp(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units J kg-1 C-1
-    steric_height_thermo_anom   = sw.gpan(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
-    del(tt) ; gc.collect()    
+    tmp                         = sw.gpan(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    steric_height_thermo_anom   = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    del(tt,tmp) ; gc.collect()    
 
     # Halosteric - steric_height
     steric_height_halo_anom     = steric_height_anom-steric_height_thermo_anom ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
