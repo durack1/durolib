@@ -365,11 +365,12 @@ def writePacked(var,fileObject='tmp.nc'):
     Usage: 
     ------
         >>> from durolib import writePacked
-        >>> writeToLog(var,'16bitPacked.nc')
+        >>> writePacked(var,'16bitPacked.nc')
     
     Notes:
     -----
         TODO: clean up fileObject existence..
+        TODO: deal with incredibly slow write-times
     """
     varMin              = var.min()
     varMax              = var.max()
