@@ -78,6 +78,44 @@ def environment():
     return False
 
 
+def fillHoles(var):
+    return var
+    #http://tcl-nap.cvs.sourceforge.net/viewvc/tcl-nap/tcl-nap/library/nap_function_lib.tcl?revision=1.56&view=markup
+    #http://tcl-nap.cvs.sourceforge.net/viewvc/tcl-nap/tcl-nap/library/stat.tcl?revision=1.29&view=markup
+    """
+     # fill_holes --
+329 	#
+330 	# Replace missing values by estimates based on means of neighbours
+331 	#
+332 	# Usage:
+333 	# fill_holes(x, max_nloops)
+334 	# where:
+335 	# - x is array to be filled
+336 	# - max_nloops is max. no. iterations (Default is to keep going until
+337 	# there are no missing values)
+338 	
+339 	proc fill_holes {
+340 	x
+341 	{max_nloops -1}
+342 	} {
+343 	set max_nloops [[nap "max_nloops"]]
+344 	set n [$x nels]
+345 	set n_present 0; # ensure at least one loop
+346 	for {set nloops 0} {$n_present < $n && $nloops != $max_nloops} {incr nloops} {
+347 	nap "ip = count(x, 0)"; # Is present? (0 = missing, 1 = present)
+348 	set n_present [[nap "sum_elements(ip)"]]
+349 	if {$n_present == 0} {
+350 	error "fill_holes: All elements are missing"
+351 	} elseif {$n_present < $n} {
+352 	nap "x = ip ? x : moving_average(x, 3, -1)"
+353 	}
+354 	}
+355 	nap "x"
+356 	}
+    """
+
+
+
 def fitPolynomial(var,time,polyOrder):
     """
     Documentation for fitPolynomial(var):
@@ -326,6 +364,93 @@ def spyderClean():
         gc.collect()
 
 
+def trimModelList(modelFileList):
+    """
+    Documentation for trimModelList(modelFileList):
+    -------
+    The trimModelList(modelFileList) function takes a python list of model files
+    and trims these for duplicates using each of the files creation_date attribute
+    along with temporal ordering information obtained from the version attribute
+    
+    Author: Paul J. Durack : pauldurack@llnl.gov
+    
+    Usage:
+    ------
+        >>> from durolib import trimModelList
+        >>> modelFileListTrimmed = trimModelList(modelFileList)
+    
+    Notes:
+    -----
+        ...
+        
+            % Test model_names and remove duplicates due to version numbers
+            choplist = NaN(10,1); chopcounter = 1;
+            for x = 1:(length(model_names)-2)
+                % Test for same model.experi.realis.temporal.var
+                model1 = model_names{x};
+                inds1 = strfind(model_names{x},'.');
+                model2 = model_names{(x+1)};
+                inds2 = strfind(model_names{x+1},'.');
+                % Test against next model
+                if strcmpi(model1(1:inds1(verInd)),model2(1:inds2(verInd)))
+                    ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
+                    ver2 = model2((inds2(verInd)+1):(inds2(verInd+1)-1));
+                    % Test for datestamp versions
+                    if ~isempty(strfind(ver1,'v201'))
+                        ver1 = regexprep(ver1,'ver-','');
+                        ver2 = regexprep(ver2,'ver-','');
+                        ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
+                        ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
+                        [~,I] = sort([ver1,ver2],'descend');
+                    else % Assume non-datestamp version number
+                        % Select most recent
+                        [~,I] = sort({ver1,ver2});
+                    end
+                    if I(1) == 1
+                        choplist(chopcounter) = x;
+                        chopcounter = chopcounter + 1;
+                    else
+                        choplist(chopcounter) = x + 1;
+                        chopcounter = chopcounter + 1;
+                    end
+                end
+                % Test against second next model
+                model3 = model_names{x+2};
+                inds3 = strfind(model_names{x+2},'.');
+                if strcmpi(model1(1:inds1(verInd)),model3(1:inds3(verInd)))
+                    ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
+                    ver2 = model3((inds3(verInd)+1):(inds3(verInd+1)-1));
+                    % Test for datestamp versions
+                    if ~isempty(strfind(ver1,'v201'))
+                        ver1 = regexprep(ver1,'ver-','');
+                        ver2 = regexprep(ver2,'ver-','');
+                        ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
+                        ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
+                        [~,I] = sort([ver1,ver2],'descend');
+                    else % Assume non-datestamp version number
+                        % Select most recent
+                        [~,I] = sort({ver1,ver2});
+                    end
+                    if I(1) == 1
+                        choplist(chopcounter) = x;
+                        chopcounter = chopcounter + 1;
+                    else
+                        choplist(chopcounter) = x + 2;
+                        chopcounter = chopcounter + 1;
+                    end
+                end
+            end
+            % Use choplist to truncate dupes
+            if sum(~isnan(choplist))
+                choplist(isnan(choplist)) = [];
+                model_names(choplist) = [];
+                var_change(choplist,:,:) = [];
+                var_mean(choplist,:,:) = [];
+            end        
+        
+    """
+    
+    
 def writeToLog(logFilePath,textToWrite):
     """
     Documentation for writeToLog(logFilePath,textToWrite):
@@ -371,7 +496,9 @@ def writePacked(var,fileObject='tmp.nc'):
     -----
         TODO: clean up fileObject existence..
         TODO: deal with incredibly slow write-times
+        TODO: deal with input data precision
     """
+    #varType             = var.dtype
     varMin              = var.min()
     varMax              = var.max()
     var.scale_factor    = np.float32((varMax-varMin)/(2**16)-1)
