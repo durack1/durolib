@@ -82,6 +82,9 @@ def fillHoles(var):
     return var
     #http://tcl-nap.cvs.sourceforge.net/viewvc/tcl-nap/tcl-nap/library/nap_function_lib.tcl?revision=1.56&view=markup
     #http://tcl-nap.cvs.sourceforge.net/viewvc/tcl-nap/tcl-nap/library/stat.tcl?revision=1.29&view=markup
+    #http://stackoverflow.com/questions/5551286/filling-gaps-in-a-numpy-array
+    #http://stackoverflow.com/questions/3662361/fill-in-missing-values-with-nearest-neighbour-in-python-numpy-masked-arrays
+    #https://www.google.com/search?q=python+nearest+neighbor+fill
     """
      # fill_holes --
 329 	#
@@ -382,71 +385,83 @@ def trimModelList(modelFileList):
     Notes:
     -----
         ...
+    """
+    # Check for list variable
+    if type(modelFileList) is not list:
+        print '** Function argument not of type list, exiting.. **'
+        return ''
+    
+    #
         
-            % Test model_names and remove duplicates due to version numbers
-            choplist = NaN(10,1); chopcounter = 1;
-            for x = 1:(length(model_names)-2)
-                % Test for same model.experi.realis.temporal.var
-                model1 = model_names{x};
-                inds1 = strfind(model_names{x},'.');
-                model2 = model_names{(x+1)};
-                inds2 = strfind(model_names{x+1},'.');
-                % Test against next model
-                if strcmpi(model1(1:inds1(verInd)),model2(1:inds2(verInd)))
-                    ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
-                    ver2 = model2((inds2(verInd)+1):(inds2(verInd+1)-1));
-                    % Test for datestamp versions
-                    if ~isempty(strfind(ver1,'v201'))
-                        ver1 = regexprep(ver1,'ver-','');
-                        ver2 = regexprep(ver2,'ver-','');
-                        ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
-                        ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
-                        [~,I] = sort([ver1,ver2],'descend');
-                    else % Assume non-datestamp version number
-                        % Select most recent
-                        [~,I] = sort({ver1,ver2});
-                    end
-                    if I(1) == 1
-                        choplist(chopcounter) = x;
-                        chopcounter = chopcounter + 1;
-                    else
-                        choplist(chopcounter) = x + 1;
-                        chopcounter = chopcounter + 1;
-                    end
-                end
-                % Test against second next model
-                model3 = model_names{x+2};
-                inds3 = strfind(model_names{x+2},'.');
-                if strcmpi(model1(1:inds1(verInd)),model3(1:inds3(verInd)))
-                    ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
-                    ver2 = model3((inds3(verInd)+1):(inds3(verInd+1)-1));
-                    % Test for datestamp versions
-                    if ~isempty(strfind(ver1,'v201'))
-                        ver1 = regexprep(ver1,'ver-','');
-                        ver2 = regexprep(ver2,'ver-','');
-                        ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
-                        ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
-                        [~,I] = sort([ver1,ver2],'descend');
-                    else % Assume non-datestamp version number
-                        % Select most recent
-                        [~,I] = sort({ver1,ver2});
-                    end
-                    if I(1) == 1
-                        choplist(chopcounter) = x;
-                        chopcounter = chopcounter + 1;
-                    else
-                        choplist(chopcounter) = x + 2;
-                        chopcounter = chopcounter + 1;
-                    end
-                end
+        
+    
+        
+    """
+    Matlab code
+    % Test model_names and remove duplicates due to version numbers
+    choplist = NaN(10,1); chopcounter = 1;
+    for x = 1:(length(model_names)-2)
+        % Test for same model.experi.realis.temporal.var
+        model1 = model_names{x};
+        inds1 = strfind(model_names{x},'.');
+        model2 = model_names{(x+1)};
+        inds2 = strfind(model_names{x+1},'.');
+        % Test against next model
+        if strcmpi(model1(1:inds1(verInd)),model2(1:inds2(verInd)))
+            ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
+            ver2 = model2((inds2(verInd)+1):(inds2(verInd+1)-1));
+            % Test for datestamp versions
+            if ~isempty(strfind(ver1,'v201'))
+                ver1 = regexprep(ver1,'ver-','');
+                ver2 = regexprep(ver2,'ver-','');
+                ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
+                ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
+                [~,I] = sort([ver1,ver2],'descend');
+            else % Assume non-datestamp version number
+                % Select most recent
+                [~,I] = sort({ver1,ver2});
             end
-            % Use choplist to truncate dupes
-            if sum(~isnan(choplist))
-                choplist(isnan(choplist)) = [];
-                model_names(choplist) = [];
-                var_change(choplist,:,:) = [];
-                var_mean(choplist,:,:) = [];
-            end        
+            if I(1) == 1
+                choplist(chopcounter) = x;
+                chopcounter = chopcounter + 1;
+            else
+                choplist(chopcounter) = x + 1;
+                chopcounter = chopcounter + 1;
+            end
+        end
+        % Test against second next model
+        model3 = model_names{x+2};
+        inds3 = strfind(model_names{x+2},'.');
+        if strcmpi(model1(1:inds1(verInd)),model3(1:inds3(verInd)))
+            ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
+            ver2 = model3((inds3(verInd)+1):(inds3(verInd+1)-1));
+            % Test for datestamp versions
+            if ~isempty(strfind(ver1,'v201'))
+                ver1 = regexprep(ver1,'ver-','');
+                ver2 = regexprep(ver2,'ver-','');
+                ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
+                ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
+                [~,I] = sort([ver1,ver2],'descend');
+            else % Assume non-datestamp version number
+                % Select most recent
+                [~,I] = sort({ver1,ver2});
+            end
+            if I(1) == 1
+                choplist(chopcounter) = x;
+                chopcounter = chopcounter + 1;
+            else
+                choplist(chopcounter) = x + 2;
+                chopcounter = chopcounter + 1;
+            end
+        end
+    end
+    % Use choplist to truncate dupes
+    if sum(~isnan(choplist))
+        choplist(isnan(choplist)) = [];
+        model_names(choplist) = [];
+        var_change(choplist,:,:) = [];
+        var_mean(choplist,:,:) = [];
+    end        
         
     """
     
