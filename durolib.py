@@ -388,13 +388,44 @@ def trimModelList(modelFileList):
     """
     # Check for list variable
     if type(modelFileList) is not list:
-        print '** Function argument not of type list, exiting.. **'
+        print '** Function argument not type list, exiting.. **'
         return ''
+    print 'ok2'
     
-    #
-        
-        
+    # Sort list
+    modelFileList.sort()
     
+    # Declare output list
+    modelFileListTrimmed = []
+    
+    # Loop through files
+    for count,testFile in enumerate(modelFileList[0:2]):
+        print count
+        # Test for final file
+        if count < len(modelFileList)-1:
+            file1 = modelFileList[count].split('/')[-1]
+            file2 = modelFileList[count+1].split('/')[-1]
+            print file1
+            print file2
+            mod1 = file1.split('.')[1]
+            exp1 = file1.split('.')[2]
+            rea1 = file1.split('.')[3]
+            ver1 = file1.split('.')[8].replace('ver-','')
+            mod2 = file2.split('.')[1]
+            exp2 = file2.split('.')[2]
+            rea2 = file2.split('.')[3]
+            ver2 = file2.split('.')[8].replace('ver-','')
+            # Compare
+            if not (mod1 == mod2 and rea1 == rea2):
+                print mod1,'save to list'
+                modelFileListTrimmed.append(modelFileList[count])
+            elif (ver1 != ver2):
+                print 'interrogate:'
+                print mod1,exp1,rea1,ver1
+                print mod2,exp2,rea2,ver2
+                
+    return ''        
+ 
         
     """
     Matlab code
