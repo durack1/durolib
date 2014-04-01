@@ -15,6 +15,7 @@ PJD  5 Aug 2013     - Added fitPolynomial function following Pete G's code examp
 PJD  9 Aug 2013     - Added writePacked function
 PJD  9 Aug 2013     - Added keyboard function
 PJD 22 Aug 2013     - Added setTimeBoundsYearly() to fixInterpAxis
+PJD  1 Apr 2014     - Added trimModelList
                     - TODO: Consider implementing multivariate polynomial regression:
                       https://github.com/mrocklin/multipolyfit
 
@@ -24,7 +25,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import cdat_info,code,datetime,gc,os,pytz,sys,inspect
+import cdat_info,cdtime,code,datetime,gc,inspect,os,pytz,string,sys
 import cdms2 as cdm
 import cdutil as cdu
 #import genutil as genu
@@ -372,8 +373,8 @@ def trimModelList(modelFileList):
     Documentation for trimModelList(modelFileList):
     -------
     The trimModelList(modelFileList) function takes a python list of model files
-    and trims these for duplicates using each of the files creation_date attribute
-    along with temporal ordering information obtained from the version attribute
+    and trims these for duplicates using file creation_date attribute along with
+    temporal ordering info obtained from the file version identifier
     
     Author: Paul J. Durack : pauldurack@llnl.gov
     
@@ -393,79 +394,76 @@ def trimModelList(modelFileList):
     
     # Sort list and declare output
     modelFileList.sort()
-    modelFileListTrimmed = []
+    modelFileListTmp = []
     modelFileIndex = []
     
-    # For each model find pairs
+    # Create subset modelFileList
+    for file1 in modelFileList:
+        file1   = file1.split('/')[-1]
+        mod     = file1.split('.')[1]
+        exp     = file1.split('.')[2]
+        rea     = file1.split('.')[3]
+        # test rea
+        modelFileListTmp.append('.'.join([mod,exp,rea]))
+        
+    # Create unique list and index
+    modelFileListTmpUnique = list(set(modelFileListTmp)) ; modelFileListTmpUnique.sort()
+    findMatches = lambda searchList,elem: [[i for i, x in enumerate(searchList) if x == e] for e in elem]
+    modelFileListTmpIndex = findMatches(modelFileListTmp,modelFileListTmpUnique)        
+        
+    # Loop through unique list
+    for count,modelNum in enumerate(modelFileListTmpIndex):
+        if len(modelFileListTmpIndex[count]) == 1: # Case single version            
+            modelFileIndex.append(modelNum)
+        else: # Case multiple versions
+            # Get version and creation_date info from file
+            modelFileListVersion = [] ; modelFileListCreationDate = [] ; modelFileListIndex = []
+            for index in modelFileListTmpIndex[count]:
+                file1 = modelFileList[index].split('/')[-1]
+                ver1 = file1.split('.')[8].replace('ver-','')
+                f_h = cdm.open(modelFileList[index])
+                CD = f_h.creation_date
+                f_h.close()
+                modelFileListVersion.append(ver1)
+                modelFileListCreationDate.append(CD)
+                modelFileListIndex.append(index)
+            print modelFileListVersion
+            print modelFileListCreationDate
+            
+            # Use creation_date to determine latest file
+            listLen = len(modelFileListCreationDate)
+            modelFileListCreationDate = map(string.replace,modelFileListCreationDate,['T',]*listLen, [' ',]*listLen)
+            modelFileListCreationDate = map(cdtime.s2c,modelFileListCreationDate)
+            modelFileListCreationDate = map(cdtime.c2r,modelFileListCreationDate,['days since 1-1-1',]*listLen)
+            modelFileListCreationDate = [x.value for x in modelFileListCreationDate]
+            maxes = [i for i,x in enumerate(modelFileListCreationDate) if x == max(modelFileListCreationDate)]
+            print modelFileListCreationDate
+            print maxes
+            ver = [modelFileListVersion[i] for i in maxes]
+            print ver
+            ind = [modelFileListIndex[i] for i in maxes]
+            print ind
+            
+            # If creation_dates match check version info to determine latest file
+            if len(maxes) > 1:
+                # Take published data if available: (1,2,3,4, ..)
+                ints = [s for s in ver if s.isdigit()]
+                int2 = [count for count,i in enumerate(ver[i].isdigit())]
+                #modelFileIndex.append(modelFileListTmpIndex[ind])
+                # Take datestamp versioned data
 
-    # Use pair indexes to determine latest
-    # - Ver info and creation_date
-    count   = 0
-    file1   = modelFileList[count].split('/')[-1]
-    mod1    = file1.split('.')[1]
-    exp1    = file1.split('.')[2]
-    rea1    = file1.split('.')[3]
-    file2   = modelFileList[count+1].split('/')[-1]
-    mod2    = file2.split('.')[1]
-    exp2    = file2.split('.')[2]
-    rea2    = file2.split('.')[3]
-    if '.'join([mod1,exp1,rea1]) == '.'join([mod2,exp2,rea2]):
-        modelFileIndex.append(count)
-    
-    
-    # Loop through files
-    for count1,testFile in enumerate(modelFileList[0:2]):
-        print count1
-        # Test for final file
-        if count1 < len(modelFileList)-1:
-            file1 = modelFileList[count1].split('/')[-1]
-            file2 = modelFileList[count1+1].split('/')[-1]
-            print file1
-            print file2
-            mod1 = file1.split('.')[1]
-            exp1 = file1.split('.')[2]
-            rea1 = file1.split('.')[3]
-            ver1 = file1.split('.')[8].replace('ver-','')
-            # Create lookup index
-            index = range(count1+1,len(modelFileList))
-            #mod2 = file2.split('.')[1]
-            #exp2 = file2.split('.')[2]
-            #rea2 = file2.split('.')[3]
-            #ver2 = file2.split('.')[8].replace('ver-','')
-            # Compare
-            #if not (mod1 == mod2 and rea1 == rea2):
-            #    print mod1,'save to list'
-                #modelFileListTrimmed.append(modelFileList[count1])
-            #elif (ver1 != ver2):
-            #    print 'interrogate:'
-            #    print mod1,exp1,rea1,ver1
-                #print mod2,exp2,rea2,ver2
-            # Create index of dupes for each list entry
-            for count2 in range(0,len(modelFileList)-2):
-                print count2
-                mod2 = file2.split('.')[1]
-                exp2 = file2.split('.')[2]
-                rea2 = file2.split('.')[3]
-                ver2 = file2.split('.')[8].replace('ver-','')
-        #if count
-                
-    return ''        
- 
+            print ints
+            print int2
+            print '---'
+
+            
+    #modelFileListTrimmed = modelFileList[index]
+        
+    return modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex
+
         
     """
     Matlab code
-    % Test model_names and remove duplicates due to version numbers
-    choplist = NaN(10,1); chopcounter = 1;
-    for x = 1:(length(model_names)-2)
-        % Test for same model.experi.realis.temporal.var
-        model1 = model_names{x};
-        inds1 = strfind(model_names{x},'.');
-        model2 = model_names{(x+1)};
-        inds2 = strfind(model_names{x+1},'.');
-        % Test against next model
-        if strcmpi(model1(1:inds1(verInd)),model2(1:inds2(verInd)))
-            ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
-            ver2 = model2((inds2(verInd)+1):(inds2(verInd+1)-1));
             % Test for datestamp versions
             if ~isempty(strfind(ver1,'v201'))
                 ver1 = regexprep(ver1,'ver-','');
@@ -485,40 +483,6 @@ def trimModelList(modelFileList):
                 chopcounter = chopcounter + 1;
             end
         end
-        % Test against second next model
-        model3 = model_names{x+2};
-        inds3 = strfind(model_names{x+2},'.');
-        if strcmpi(model1(1:inds1(verInd)),model3(1:inds3(verInd)))
-            ver1 = model1((inds1(verInd)+1):(inds1(verInd+1)-1));
-            ver2 = model3((inds3(verInd)+1):(inds3(verInd+1)-1));
-            % Test for datestamp versions
-            if ~isempty(strfind(ver1,'v201'))
-                ver1 = regexprep(ver1,'ver-','');
-                ver2 = regexprep(ver2,'ver-','');
-                ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
-                ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
-                [~,I] = sort([ver1,ver2],'descend');
-            else % Assume non-datestamp version number
-                % Select most recent
-                [~,I] = sort({ver1,ver2});
-            end
-            if I(1) == 1
-                choplist(chopcounter) = x;
-                chopcounter = chopcounter + 1;
-            else
-                choplist(chopcounter) = x + 2;
-                chopcounter = chopcounter + 1;
-            end
-        end
-    end
-    % Use choplist to truncate dupes
-    if sum(~isnan(choplist))
-        choplist(isnan(choplist)) = [];
-        model_names(choplist) = [];
-        var_change(choplist,:,:) = [];
-        var_mean(choplist,:,:) = [];
-    end        
-        
     """
     
     
