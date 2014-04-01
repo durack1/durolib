@@ -390,39 +390,51 @@ def trimModelList(modelFileList):
     if type(modelFileList) is not list:
         print '** Function argument not type list, exiting.. **'
         return ''
-    print 'ok2'
     
-    # Sort list
+    # Sort list and declare output
     modelFileList.sort()
-    
-    # Declare output list
     modelFileListTrimmed = []
     
+    # For each model find pairs
+
+    # Use pair indexes to determine latest
+    # - Ver info and creation_date    
+    
     # Loop through files
-    for count,testFile in enumerate(modelFileList[0:2]):
-        print count
+    for count1,testFile in enumerate(modelFileList[0:2]):
+        print count1
         # Test for final file
-        if count < len(modelFileList)-1:
-            file1 = modelFileList[count].split('/')[-1]
-            file2 = modelFileList[count+1].split('/')[-1]
+        if count1 < len(modelFileList)-1:
+            file1 = modelFileList[count1].split('/')[-1]
+            file2 = modelFileList[count1+1].split('/')[-1]
             print file1
             print file2
             mod1 = file1.split('.')[1]
             exp1 = file1.split('.')[2]
             rea1 = file1.split('.')[3]
             ver1 = file1.split('.')[8].replace('ver-','')
-            mod2 = file2.split('.')[1]
-            exp2 = file2.split('.')[2]
-            rea2 = file2.split('.')[3]
-            ver2 = file2.split('.')[8].replace('ver-','')
+            # Create lookup index
+            index = range(count1+1,len(modelFileList))
+            #mod2 = file2.split('.')[1]
+            #exp2 = file2.split('.')[2]
+            #rea2 = file2.split('.')[3]
+            #ver2 = file2.split('.')[8].replace('ver-','')
             # Compare
-            if not (mod1 == mod2 and rea1 == rea2):
-                print mod1,'save to list'
-                modelFileListTrimmed.append(modelFileList[count])
-            elif (ver1 != ver2):
-                print 'interrogate:'
-                print mod1,exp1,rea1,ver1
-                print mod2,exp2,rea2,ver2
+            #if not (mod1 == mod2 and rea1 == rea2):
+            #    print mod1,'save to list'
+                #modelFileListTrimmed.append(modelFileList[count1])
+            #elif (ver1 != ver2):
+            #    print 'interrogate:'
+            #    print mod1,exp1,rea1,ver1
+                #print mod2,exp2,rea2,ver2
+            # Create index of dupes for each list entry
+            for count2 in range(0,len(modelFileList)-2):
+                print count2
+                mod2 = file2.split('.')[1]
+                exp2 = file2.split('.')[2]
+                rea2 = file2.split('.')[3]
+                ver2 = file2.split('.')[8].replace('ver-','')
+        #if count
                 
     return ''        
  
