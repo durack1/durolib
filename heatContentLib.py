@@ -50,7 +50,7 @@ def scrubNaNAndMask(var,maskVar):
     return var
 
 
-def make_heatContent(salt,temp,destMask,thetao,pressure):
+def makeHeatContent(salt,temp,destMask,thetao,pressure):
     # Remap variables to short names
     #print salt.getAxisIds()
     s       = salt(squeeze=1)
