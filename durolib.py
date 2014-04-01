@@ -394,11 +394,24 @@ def trimModelList(modelFileList):
     # Sort list and declare output
     modelFileList.sort()
     modelFileListTrimmed = []
+    modelFileIndex = []
     
     # For each model find pairs
 
     # Use pair indexes to determine latest
-    # - Ver info and creation_date    
+    # - Ver info and creation_date
+    count   = 0
+    file1   = modelFileList[count].split('/')[-1]
+    mod1    = file1.split('.')[1]
+    exp1    = file1.split('.')[2]
+    rea1    = file1.split('.')[3]
+    file2   = modelFileList[count+1].split('/')[-1]
+    mod2    = file2.split('.')[1]
+    exp2    = file2.split('.')[2]
+    rea2    = file2.split('.')[3]
+    if '.'join([mod1,exp1,rea1]) == '.'join([mod2,exp2,rea2]):
+        modelFileIndex.append(count)
+    
     
     # Loop through files
     for count1,testFile in enumerate(modelFileList[0:2]):
