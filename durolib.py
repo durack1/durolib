@@ -385,7 +385,7 @@ def trimModelList(modelFileList):
     
     Notes:
     -----
-        ...
+    - PJD  1 Apr 2014 - Implement sanity checks for r1i1p1 matching for e.g.
     """
     # Check for list variable
     if type(modelFileList) is not list:
@@ -414,7 +414,7 @@ def trimModelList(modelFileList):
     # Loop through unique list
     for count,modelNum in enumerate(modelFileListTmpIndex):
         if len(modelFileListTmpIndex[count]) == 1: # Case single version            
-            modelFileIndex.append(modelNum)
+            modelFileIndex.append(int(str(modelNum).strip('[]')))
         else: # Case multiple versions
             # Get version and creation_date info from file
             modelFileListVersion = [] ; modelFileListCreationDate = [] ; modelFileListIndex = []
@@ -427,8 +427,8 @@ def trimModelList(modelFileList):
                 modelFileListVersion.append(ver1)
                 modelFileListCreationDate.append(CD)
                 modelFileListIndex.append(index)
-            print modelFileListVersion
-            print modelFileListCreationDate
+            #print modelFileListVersion
+            #print modelFileListCreationDate
             
             # Use creation_date to determine latest file
             listLen = len(modelFileListCreationDate)
@@ -437,53 +437,44 @@ def trimModelList(modelFileList):
             modelFileListCreationDate = map(cdtime.c2r,modelFileListCreationDate,['days since 1-1-1',]*listLen)
             modelFileListCreationDate = [x.value for x in modelFileListCreationDate]
             maxes = [i for i,x in enumerate(modelFileListCreationDate) if x == max(modelFileListCreationDate)]
-            print modelFileListCreationDate
-            print maxes
+            #print modelFileListCreationDate
+            #print maxes
             ver = [modelFileListVersion[i] for i in maxes]
-            print ver
+            #print ver
             ind = [modelFileListIndex[i] for i in maxes]
-            print ind
+            #print ind
             
             # If creation_dates match check version info to determine latest file
+            indTest = '-' ; #verTest = '-'
             if len(maxes) > 1:
-                # Take published data if available: (1,2,3,4, ..)
-                ints = [s for s in ver if s.isdigit()]
-                int2 = [count for count,i in enumerate(ver[i].isdigit())]
-                #modelFileIndex.append(modelFileListTmpIndex[ind])
-                # Take datestamp versioned data
+                pubTest = 0 ; dateTest = 0;
+                for count,ver1 in reversed(list(enumerate(ver))):
+                    # Take datestamp versioned data
+                    if 'v' in ver1 and ver1 > dateTest:
+                        #print 'is v'
+                        #verTest = ver[count]
+                        indTest = ind[count]
+                        dateTest = ver1
+                    # Use published data preferentially: 1,2,3,4, ...
+                    if ver1.isdigit() and ver1 > pubTest:
+                        #print 'isdigit'
+                        #verTest = ver[count]
+                        indTest = ind[count]
+                        pubTest = ver1
+                modelFileIndex.append(int(str(indTest).strip('[]')))
+            else:
+                modelFileIndex.append(int(str(ind).strip('[]')))
+            #print pubTest
+            #print dateTest
+            #print verTest
+            #print '---'
 
-            print ints
-            print int2
-            print '---'
-
-            
-    #modelFileListTrimmed = modelFileList[index]
+    #modelFileListTrimmed = modelFileList[modelFileIndex]
+    modelFileListTrimmed = [modelFileList[i] for i in modelFileIndex]
         
-    return modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex
+    #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex
+    return modelFileListTrimmed
 
-        
-    """
-    Matlab code
-            % Test for datestamp versions
-            if ~isempty(strfind(ver1,'v201'))
-                ver1 = regexprep(ver1,'ver-','');
-                ver2 = regexprep(ver2,'ver-','');
-                ver1 = datenum(regexprep(ver1,'v',''),'yyyymmdd');
-                ver2 = datenum(regexprep(ver2,'v',''),'yyyymmdd');
-                [~,I] = sort([ver1,ver2],'descend');
-            else % Assume non-datestamp version number
-                % Select most recent
-                [~,I] = sort({ver1,ver2});
-            end
-            if I(1) == 1
-                choplist(chopcounter) = x;
-                chopcounter = chopcounter + 1;
-            else
-                choplist(chopcounter) = x + 1;
-                chopcounter = chopcounter + 1;
-            end
-        end
-    """
     
     
 def writeToLog(logFilePath,textToWrite):
