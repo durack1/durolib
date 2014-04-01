@@ -380,6 +380,7 @@ def trimModelList(modelFileList):
     
     Usage:
     ------
+        >>> modelFileList = glob.glob(os.path.join(filePath,'*.nc')) ; # provides full directory/file path        
         >>> from durolib import trimModelList
         >>> modelFileListTrimmed = trimModelList(modelFileList)
     
@@ -403,7 +404,7 @@ def trimModelList(modelFileList):
         mod     = file1.split('.')[1]
         exp     = file1.split('.')[2]
         rea     = file1.split('.')[3]
-        # test rea
+        # test rea for r1i1p111 matching
         modelFileListTmp.append('.'.join([mod,exp,rea]))
         
     # Create unique list and index
@@ -437,12 +438,10 @@ def trimModelList(modelFileList):
             modelFileListCreationDate = map(cdtime.c2r,modelFileListCreationDate,['days since 1-1-1',]*listLen)
             modelFileListCreationDate = [x.value for x in modelFileListCreationDate]
             maxes = [i for i,x in enumerate(modelFileListCreationDate) if x == max(modelFileListCreationDate)]
-            #print modelFileListCreationDate
-            #print maxes
             ver = [modelFileListVersion[i] for i in maxes]
-            #print ver
             ind = [modelFileListIndex[i] for i in maxes]
-            #print ind
+            #print modelFileListCreationDate
+            #print maxes,ver,ind
             
             # If creation_dates match check version info to determine latest file
             indTest = '-' ; #verTest = '-'
@@ -451,30 +450,23 @@ def trimModelList(modelFileList):
                 for count,ver1 in reversed(list(enumerate(ver))):
                     # Take datestamp versioned data
                     if 'v' in ver1 and ver1 > dateTest:
-                        #print 'is v'
                         #verTest = ver[count]
                         indTest = ind[count]
                         dateTest = ver1
                     # Use published data preferentially: 1,2,3,4, ...
                     if ver1.isdigit() and ver1 > pubTest:
-                        #print 'isdigit'
-                        #verTest = ver[count]
                         indTest = ind[count]
                         pubTest = ver1
                 modelFileIndex.append(int(str(indTest).strip('[]')))
             else:
                 modelFileIndex.append(int(str(ind).strip('[]')))
-            #print pubTest
-            #print dateTest
-            #print verTest
-            #print '---'
+            #print pubTest,dateTest
 
-    #modelFileListTrimmed = modelFileList[modelFileIndex]
+    # Trim original list with new index
     modelFileListTrimmed = [modelFileList[i] for i in modelFileIndex]
         
-    #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex
+    #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex ; # Debugging
     return modelFileListTrimmed
-
     
     
 def writeToLog(logFilePath,textToWrite):
