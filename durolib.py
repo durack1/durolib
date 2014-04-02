@@ -406,7 +406,7 @@ def trimModelList(modelFileList):
         mod     = file1.split('.')[1]
         exp     = file1.split('.')[2]
         rea     = file1.split('.')[3]
-        # Test rea for r1i1p111 matching
+        # Test rea for r1i1p111 format match
         reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
@@ -429,7 +429,6 @@ def trimModelList(modelFileList):
                 file1 = modelFileList[index].split('/')[-1]
                 verInd = int(str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]'))
                 ver1 = file1.split('.')[verInd].replace('ver-','')                
-                #ver1 = file1.split('.')[8].replace('ver-','')
                 f_h = cdm.open(modelFileList[index])
                 CD = f_h.creation_date
                 f_h.close()
