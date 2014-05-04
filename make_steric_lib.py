@@ -70,7 +70,7 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - PJD 15 Aug 2013 - Increased interpolated field resolution [200,300,500,700,1000,1500,1800,2000] - [5,10,20,30,40,50,75,100,125,150,200, ...]
     - PJD 18 Aug 2013 - AR5 hard coded rho=1020,cp=4187 == 4.3e6 vs Ishii 1970 rho.mean=1024,cp.mean=3922 == 4.1e6 ~5% too high
     - PJD 13 Jan 2014 - Corrected steric_height_anom and steric_height_thermo_anom to true anomaly fields, needed to remove climatology
-    - PJD  3 May 2014 - Turned off thetao conversion
+    - PJD  3 May 2014 - Turned off thetao conversion, although convert to numpy array rather than cdms2 transient variable
     - TODO: Query Charles on why *.name attributes are propagating
     - TODO: validate outputs and compare to matlab versions - 10e-7 errors.
     """
@@ -132,10 +132,12 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     del(depth)
     
     # Convert using python-seawater library (v3.3.1 - 130807)
-    #if thetao:
+    if thetao:
         # Process potential temperature to in-situ - default conversion sets reference pressure to 0 (surface)
         #temp_chg                = sw.temp(np.array(so),np.array(temp_chg),np.array(pressure_levels)); # units degrees C
         #temp                    = sw.temp(np.array(so),np.array(temp),np.array(pressure_levels)); # units degrees C
+        temp_chg                = np.array(temp_chg); # units degrees C
+        temp                    = np.array(temp); # units degrees C
     
     # Climatologies - rho,cp,steric_height
     rho                         = sw.dens(np.array(so),np.array(temp),np.array(pressure_levels)) ; # units kg m-3
