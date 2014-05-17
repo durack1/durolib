@@ -31,9 +31,9 @@ def scrubNaNAndMask(var,maskVar):
     return var
 
 
-def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
+def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     """
-    The make_steric() function takes 3D (not temporal) arguments and creates
+    The makeSteric() function takes 3D (not temporal) arguments and creates
     heat content and steric fields which are written to a specified outfile
     
     Author: Paul J. Durack : pauldurack@llnl.gov : @durack1.
@@ -51,8 +51,8 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     
     Usage:
     ------
-        >>> from durolib import make_steric
-        >>> make_steric(salinity,salinityChg,thetao,thetaoChg,'outfile.nc',True,False)
+        >>> from makeStericLib import makeSteric
+        >>> makeSteric(salinity,salinityChg,thetao,thetaoChg,'outfile.nc',True,False)
     
     Notes:
     -----
@@ -71,6 +71,7 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - PJD 18 Aug 2013 - AR5 hard coded rho=1020,cp=4187 == 4.3e6 vs Ishii 1970 rho.mean=1024,cp.mean=3922 == 4.1e6 ~5% too high
     - PJD 13 Jan 2014 - Corrected steric_height_anom and steric_height_thermo_anom to true anomaly fields, needed to remove climatology
     - PJD  3 May 2014 - Turned off thetao conversion, although convert to numpy array rather than cdms2 transient variable
+    - TODO: Better deal with insitu vs thetao variables
     - TODO: Query Charles on why *.name attributes are propagating
     - TODO: validate outputs and compare to matlab versions - 10e-7 errors.
     """
@@ -136,6 +137,8 @@ def make_steric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
         # Process potential temperature to in-situ - default conversion sets reference pressure to 0 (surface)
         #temp_chg                = sw.temp(np.array(so),np.array(temp_chg),np.array(pressure_levels)); # units degrees C
         #temp                    = sw.temp(np.array(so),np.array(temp),np.array(pressure_levels)); # units degrees C
+        #temp_chg                = sw.ptmp(np.array(so),np.array(temp_chg),np.array(pressure_levels),np.array(pressure_levels)); # units degrees C
+        #temp                    = sw.ptmp(np.array(so),np.array(temp),np.array(pressure_levels),np.array(pressure_levels)); # units degrees C
         temp_chg                = np.array(temp_chg); # units degrees C
         temp                    = np.array(temp); # units degrees C
     
