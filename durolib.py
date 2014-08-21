@@ -16,6 +16,7 @@ PJD  9 Aug 2013     - Added writePacked function
 PJD  9 Aug 2013     - Added keyboard function
 PJD 22 Aug 2013     - Added setTimeBoundsYearly() to fixInterpAxis
 PJD  1 Apr 2014     - Added trimModelList
+PJD 20 Aug 2014     - Added mkDirNoOSErr and sysCallTimeout functions
                     - TODO: Consider implementing multivariate polynomial regression:
                       https://github.com/mrocklin/multipolyfit
 
@@ -25,13 +26,14 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import cdat_info,cdtime,code,datetime,gc,inspect,os,pytz,re,string,sys
+import cdat_info,cdtime,code,datetime,errno,gc,inspect,os,pytz,re,string,sys,time
 import cdms2 as cdm
 import cdutil as cdu
 #import genutil as genu
 #import matplotlib as plt
 import MV2 as mv
 import numpy as np
+import subprocess
 #import scipy as sp
 from numpy.core.fromnumeric import shape
 from socket import gethostname
@@ -333,7 +335,34 @@ def keyboard(banner=None):
     except SystemExit:
         return
         
-
+def mkDirNoOSErr(newdir,mode=0777):
+    """
+    Documentation for mkDirNoOSErr(newdir,mode=0777):
+    -------
+    The mkDirNoOSErr() function mimics os.makedirs however does not fail if the directory already
+    exists
+    
+    Author: Paul J. Durack : pauldurack@llnl.gov
+    
+    Returns:
+    -------
+           Nothing.
+    Usage: 
+    ------
+        >>> from durolib import mkDirNoOSErr
+        >>> mkDirNoOSErr('newPath',mode=0777)
+            
+    Notes:
+    -----
+    """
+    try:
+        os.makedirs(newdir,mode)
+    except OSError as err:
+        #Re-raise the error unless it's about an already existing directory
+        if err.errno != errno.EEXIST or not os.path.isdir(newdir):
+            raise
+    
+    
 def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
 
@@ -366,6 +395,33 @@ def spyderClean():
         print 'yep..'
         del(e,pi,sctypeNA,typeNA)
         gc.collect()
+
+
+def sysCallTimeout(cmd,timeout):
+    """
+    Documentation for sysCallTimeout(cmd,timeout):
+    -------
+    The sysCallTimeout(cmd,timeout) function attempts to execute a system call (cmd) and times out in
+    a specified time
+    
+    Author: Paul J. Durack : pauldurack@llnl.gov
+    
+    Usage: 
+    ------
+        >>> from durolib import sysCallTimeout
+        >>> sysCallTimeout(cmd,timeout)
+    
+    Notes:
+    -----
+    """
+    start = time.time()
+    p = subprocess.Popen(cmd,shell=True,stdout=subprocess.PIPE,stderr=subprocess.PIPE)
+    while time.time() - start < timeout:
+        if p.poll() is not None:
+            return
+        time.sleep(0.1)
+    p.kill()
+    raise OSError('sysCallTimeout: System call timed out')
 
 
 def trimModelList(modelFileList):
