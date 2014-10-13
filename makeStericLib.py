@@ -6,8 +6,9 @@ import MV2 as mv
 import numpy as np
 np.seterr(all='ignore') ; # Cautious use of this turning all error reporting off - shouldn't be an issue as using masked arrays
 import seawater as sw ; # was seawater.csiro
-from durolib import globalAttWrite
+from durolib import getGitInfo,globalAttWrite
 from numpy import array,isnan,tile,shape,transpose ; #mod
+from string import replace
 #import matplotlib as plt
 #from matplotlib.cm import RdBu_r
 #import seawater.gibbs as teos10
@@ -446,6 +447,11 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     globalAttWrite(filehandle,options=None) ; # Use function to write standard global atts
     # Write seawater version
     filehandle.seawater_library_version = sw.__version__
+    # Write makeSteric version
+    makeStericPath = str(makeSteric.__code__).split(' ')[6]
+    makeStericPath = replace(replace(makeStericPath,'"',''),',','')
+    makeStericPath = "/".join(makeStericPath.split('/')[0:-1])
+    filehandle.makeSteric_version = ' '.join(getGitInfo(makeStericPath)[0:3])
     # Master variables
     filehandle.write(so.astype('float32'))
     filehandle.write(so_chg.astype('float32'))

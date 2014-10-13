@@ -17,6 +17,7 @@ PJD  9 Aug 2013     - Added keyboard function
 PJD 22 Aug 2013     - Added setTimeBoundsYearly() to fixInterpAxis
 PJD  1 Apr 2014     - Added trimModelList
 PJD 20 Aug 2014     - Added mkDirNoOSErr and sysCallTimeout functions
+PJD 13 Oct 2014     - Added getGitInfo function
                     - TODO: Consider implementing multivariate polynomial regression:
                       https://github.com/mrocklin/multipolyfit
 
@@ -239,6 +240,49 @@ def fixVarUnits(var,varName,report=False,logFile=None):
                 writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
 
     return var,var_fixed
+
+
+def getGitInfo(filePath):
+    """
+    Documentation for getGitInfo():
+    -------
+    The getGitInfo() function retrieves latest commit info specified by filePath
+    
+    Author: Paul J. Durack : pauldurack@llnl.gov
+    
+    Returns:
+    -------
+           gitTag[0] - commit hash
+           gitTag[1] - commit author
+           gitTag[2] - commit date and time
+           gitTag[3] - commit notes
+           
+    Usage: 
+    ------
+        >>> from durolib import getGitInfo
+        >>> gitTag = getGitInfo(filePath)
+    
+    Where filePath is a file which is monitored by git
+            
+    Notes:
+    -----
+        When ...
+    """
+    p = subprocess.Popen(['git','log','-n1','--',filePath],stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd='/'.join(filePath.split('/')[0:-1]))
+    if 'fatal: Not a git repository' in p.stderr.read():
+        print 'filePath not a valid git-tracked file'
+        return
+    gitTagFull = p.stdout.read() ; # git full tag
+    del(filePath,p)
+    gitTag = []
+    for count,gitStr in enumerate(gitTagFull.split('\n')):
+        if gitStr == '':
+            pass
+        else:
+            gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
+            gitTag.extend(["".join(gitStr.strip())])
+    
+    return gitTag
 
 
 def globalAttWrite(file_handle,options):
