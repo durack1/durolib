@@ -450,8 +450,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     filehandle.seawater_library_version = sw.__version__
     # Write makeSteric version
     makeStericPath = str(makeSteric.__code__).split(' ')[6]
-    makeStericPath = replace(replace(makeStericPath,'"',''),',','')
-    makeStericPath = "/".join(makeStericPath.split('/')[0:-1])
+    makeStericPath = replace(replace(makeStericPath,'"',''),',','') ; # Clean scraped path
     filehandle.makeSteric_version = ' '.join(getGitInfo(makeStericPath)[0:3])
     # Master variables
     filehandle.write(so.astype('float32'))
