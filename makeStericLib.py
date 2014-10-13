@@ -72,6 +72,8 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - PJD 13 Jan 2014 - Corrected steric_height_anom and steric_height_thermo_anom to true anomaly fields, needed to remove climatology
     - PJD  3 May 2014 - Turned off thetao conversion, although convert to numpy array rather than cdms2 transient variable
     - PJD 13 Oct 2014 - Added seawater library version as a global attribute
+    - PJD 13 Oct 2014 - FIXED: bug with calculation of rho_halo variable was calculating gpan
+    - PJD 13 Oct 2014 - Added alternate calculation of halosteric anomaly (direct salinity anomaly calculation, rather than total-thermosteric)
     - TODO: Better deal with insitu vs thetao variables
     - TODO: Query Charles on why *.name attributes are propagating
     - TODO: validate outputs and compare to matlab versions - 10e-7 errors.
@@ -150,9 +152,11 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     
     # Halosteric - rho,cp
     ss                          = map(array,(so+so_chg))
-    rho_halo                    = sw.gpan(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units kg m-3
+    rho_halo                    = sw.dens(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units kg m-3
     cp_halo                     = sw.cp(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units J kg-1 C-1
-
+    tmp                         = sw.gpan(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    steric_height_halo_anom2    = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
+    
     # Full steric - steric_height
     tt                          = map(array,(temp+temp_chg))
     tmp                         = sw.gpan(np.array(ss),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
@@ -189,6 +193,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_anom          = scrubNaNAndMask(steric_height_anom,so)
     steric_height_thermo_anom   = scrubNaNAndMask(steric_height_thermo_anom,so)
     steric_height_halo_anom     = scrubNaNAndMask(steric_height_halo_anom,so)
+    steric_height_halo_anom2    = scrubNaNAndMask(steric_height_halo_anom2,so)
     heat_content                = scrubNaNAndMask(heat_content,so)
     heat_content_sanom          = scrubNaNAndMask(heat_content_sanom,so)
     heat_content_tanom          = scrubNaNAndMask(heat_content_tanom,so)
@@ -265,6 +270,11 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_halo_anom.setAxis(1,so.getAxis(1))
     steric_height_halo_anom.setAxis(2,so.getAxis(2))
     steric_height_halo_anom.units   = 'm^3 kg^-1 Pa (dynamic decimeter)'
+    steric_height_halo_anom2         = cdm.createVariable(steric_height_halo_anom2,id='steric_height_halo_anom2')
+    steric_height_halo_anom2.setAxis(0,so.getAxis(0))
+    steric_height_halo_anom2.setAxis(1,so.getAxis(1))
+    steric_height_halo_anom2.setAxis(2,so.getAxis(2))
+    steric_height_halo_anom2.units   = 'm^3 kg^-1 Pa (dynamic decimeter)'
     heat_content                    = cdm.createVariable(heat_content,id='heat_content')
     heat_content.setAxis(0,so.getAxis(0))
     heat_content.setAxis(1,so.getAxis(1))
@@ -300,6 +310,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_anom_depthInterp          = cdu.linearInterpolation(steric_height_anom,pressure_levels,levels=newdepth)
     steric_height_thermo_anom_depthInterp   = cdu.linearInterpolation(steric_height_thermo_anom,pressure_levels,levels=newdepth)
     steric_height_halo_anom_depthInterp     = cdu.linearInterpolation(steric_height_halo_anom,pressure_levels,levels=newdepth)
+    steric_height_halo_anom2_depthInterp    = cdu.linearInterpolation(steric_height_halo_anom2,pressure_levels,levels=newdepth)
     heat_content_sanom_depthInterp          = cdu.linearInterpolation(heat_content_sanom,pressure_levels,levels=newdepth)
     heat_content_tanom_depthInterp          = cdu.linearInterpolation(heat_content_tanom,pressure_levels,levels=newdepth)
     heat_content_tsanom_depthInterp         = cdu.linearInterpolation(heat_content_tanom,pressure_levels,levels=newdepth)
@@ -310,6 +321,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_anom_depthInterp          = scrubNaNAndMask(steric_height_anom_depthInterp,so_depthInterp)
     steric_height_thermo_anom_depthInterp   = scrubNaNAndMask(steric_height_thermo_anom_depthInterp,so_depthInterp)
     steric_height_halo_anom_depthInterp     = scrubNaNAndMask(steric_height_halo_anom_depthInterp,so_depthInterp)
+    steric_height_halo_anom2_depthInterp    = scrubNaNAndMask(steric_height_halo_anom2_depthInterp,so_depthInterp)
     heat_content_sanom_depthInterp          = scrubNaNAndMask(heat_content_sanom_depthInterp,so_depthInterp)
     heat_content_tanom_depthInterp          = scrubNaNAndMask(heat_content_tanom_depthInterp,so_depthInterp)
     heat_content_tsanom_depthInterp         = scrubNaNAndMask(heat_content_tsanom_depthInterp,so_depthInterp)
@@ -333,6 +345,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_anom_depthInterp.setAxis(0,newdepth)
     steric_height_thermo_anom_depthInterp.setAxis(0,newdepth)
     steric_height_halo_anom_depthInterp.setAxis(0,newdepth)
+    steric_height_halo_anom2_depthInterp.setAxis(0,newdepth)
     heat_content_sanom_depthInterp.setAxis(0,newdepth)
     heat_content_tanom_depthInterp.setAxis(0,newdepth)
     heat_content_tsanom_depthInterp.setAxis(0,newdepth)
@@ -416,6 +429,11 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_halo_anom_depthInterp.setAxis(1,so.getAxis(1))
     steric_height_halo_anom_depthInterp.setAxis(2,so.getAxis(2))
     steric_height_halo_anom_depthInterp.units   = 'm^3 kg^-1 Pa (dynamic decimeter)'
+    steric_height_halo_anom2_depthInterp         = cdm.createVariable(steric_height_halo_anom2_depthInterp,id='steric_height_halo_anom2_depthInterp')
+    steric_height_halo_anom2_depthInterp.setAxis(0,newdepth)
+    steric_height_halo_anom2_depthInterp.setAxis(1,so.getAxis(1))
+    steric_height_halo_anom2_depthInterp.setAxis(2,so.getAxis(2))
+    steric_height_halo_anom2_depthInterp.units   = 'm^3 kg^-1 Pa (dynamic decimeter)'
     # Cleanup workspace
     del(newdepth) ; gc.collect()
     
@@ -454,7 +472,9 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     filehandle.write(steric_height_anom.astype('float32'))
     filehandle.write(steric_height_anom_depthInterp.astype('float32'))
     filehandle.write(steric_height_halo_anom.astype('float32'))
+    filehandle.write(steric_height_halo_anom2.astype('float32'))
     filehandle.write(steric_height_halo_anom_depthInterp.astype('float32'))
+    filehandle.write(steric_height_halo_anom2_depthInterp.astype('float32'))
     filehandle.write(steric_height_thermo_anom.astype('float32'))
     filehandle.write(steric_height_thermo_anom_depthInterp.astype('float32'))
     filehandle.close()
