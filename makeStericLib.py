@@ -71,6 +71,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - PJD 18 Aug 2013 - AR5 hard coded rho=1020,cp=4187 == 4.3e6 vs Ishii 1970 rho.mean=1024,cp.mean=3922 == 4.1e6 ~5% too high
     - PJD 13 Jan 2014 - Corrected steric_height_anom and steric_height_thermo_anom to true anomaly fields, needed to remove climatology
     - PJD  3 May 2014 - Turned off thetao conversion, although convert to numpy array rather than cdms2 transient variable
+    - PJD 13 Oct 2014 - Added seawater library version as a global attribute
     - TODO: Better deal with insitu vs thetao variables
     - TODO: Query Charles on why *.name attributes are propagating
     - TODO: validate outputs and compare to matlab versions - 10e-7 errors.
@@ -425,6 +426,8 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     filehandle = cdm.open(outFileName,'w')
     # Global attributes
     globalAttWrite(filehandle,options=None) ; # Use function to write standard global atts
+    # Write seawater version
+    filehandle.seawater_library_version = sw.__version__
     # Master variables
     filehandle.write(so.astype('float32'))
     filehandle.write(so_chg.astype('float32'))
