@@ -395,15 +395,15 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     Inputs:
     -----
     
-    |   **timeStart** - string start time (e.g. '2001' or '2001-1-1 0:0:0.0')
-    |   **timeEnd** - string end time
-    |   **calendarStep <optional>** - string either 'months' or 'days'
-    |   **dayStep <optional>** - int
+    |  **timeStart** - string start time (e.g. '2001' or '2001-1-1 0:0:0.0')
+    |  **timeEnd** - string end time
+    |  **calendarStep <optional>** - string either 'months' or 'days'
+    |  **dayStep <optional>** - int
     
     Returns:
     -----
     
-    |   **time** - cdms2 transient axis
+    |  **time** - cdms2 transient axis
 
     Usage:
     -----
@@ -412,9 +412,9 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
 
     Notes:
     -----
-    |   - TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
-    |   - There are issues with the daily calendar creation - likely requiring tweaks to cdutil.times.setAxisTimeBoundsDaily
-    |   - Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
+    * TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
+    * Issues with the daily calendar creation - likely require tweaks to cdutil.times.setAxisTimeBoundsDaily (range doesn't accept fractions, only ints)
+    * Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
     """
     # First check inputs
     if calendarStep not in ['days','months',]:
@@ -500,30 +500,6 @@ def smooth(array,method):
     #/apps/MATLAB/R2011b/toolbox/matlab/specgraph/smooth3.m
     #/apps/MATLAB/R2011b/toolbox/curvefit/curvefit/smooth.m
     return False
-
-
-def spyderClean():
-    """
-    Documentation for spyder_clean():
-    -------
-    The spyder_clean() function purges variables initialised upon startup
-
-    Author: Paul J. Durack : pauldurack@llnl.gov
-
-    Usage:
-    ------
-        >>> from durolib import spyder_clean
-        >>> spyder_clean()
-
-    Notes:
-    -----
-        Currently not working ...
-    """
-    local_vars = outerLocals()
-    if 'e' in local_vars:
-        print 'yep..'
-        del(e,pi,sctypeNA,typeNA)
-        gc.collect()
 
 
 def sysCallTimeout(cmd,timeout):
