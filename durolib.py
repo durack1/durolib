@@ -30,7 +30,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import cdat_info,cdtime,code,datetime,errno,gc,inspect,os,pytz,re,string,sys,time
+import cdat_info,cdtime,code,datetime,errno,inspect,os,pytz,re,string,sys,time
 import cdms2 as cdm
 import cdtime as cdt
 import cdutil as cdu
@@ -254,23 +254,27 @@ def getGitInfo(filePath):
 
     Author: Paul J. Durack : pauldurack@llnl.gov
 
+    Inputs:
+    -----
+    
+    |  **filePath** - a fully qualified file which is monitored by git
+
     Returns:
     -------
-           gitTag[0] - commit hash
-           gitTag[1] - commit author
-           gitTag[2] - commit date and time
-           gitTag[3] - commit notes
+    
+    |  **gitTag[0]** - commit hash
+    |  **gitTag[1]** - commit author
+    |  **gitTag[2]** - commit date and time
+    |  **gitTag[3]** - commit notes
 
     Usage:
     ------
         >>> from durolib import getGitInfo
         >>> gitTag = getGitInfo(filePath)
 
-    Where filePath is a file which is monitored by git
-
     Notes:
     -----
-        When ...
+    ...
     """
     p = subprocess.Popen(['git','log','-n1','--',filePath],stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd='/'.join(filePath.split('/')[0:-1]))
     if 'fatal: Not a git repository' in p.stderr.read():
@@ -298,6 +302,11 @@ def globalAttWrite(file_handle,options):
 
     Author: Paul J. Durack : pauldurack@llnl.gov
 
+    Inputs:
+    -----
+    
+    |  **file_handle** - a cdms2 open, writeable file handle
+    
     Returns:
     -------
            Nothing.
@@ -306,13 +315,11 @@ def globalAttWrite(file_handle,options):
         >>> from durolib import globalAttWrite
         >>> globalAttWrite(file_handle)
 
-    Where file_handle is a handle to an open, writeable netcdf file
-
     Optional Arguments:
     -------------------
-    option=optionalArguments
-    Restrictions: option has to be a string
-    Default : ...
+    |  option=optionalArguments
+    |  Restrictions: option has to be a string
+    |  Default : ...
 
     You can pass option='SOMETHING', ...
 
@@ -325,7 +332,7 @@ def globalAttWrite(file_handle,options):
 
     Notes:
     -----
-        When ...
+    ...
     """
     # Create timestamp, corrected to UTC for history
     local                       = pytz.timezone("America/Los_Angeles")
