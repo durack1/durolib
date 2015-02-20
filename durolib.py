@@ -29,6 +29,7 @@ This library contains all functions written to replicate matlab functionality in
 ## Import common modules ##
 import cdat_info,cdtime,code,datetime,errno,gc,inspect,os,pytz,re,string,sys,time
 import cdms2 as cdm
+import cdtime as cdt
 import cdutil as cdu
 #import genutil as genu
 #import matplotlib as plt
@@ -62,14 +63,14 @@ def clearAll():
     Documentation for clearall():
     -------
     The clearall() function purges all variables in global namespace
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Usage:
     ------
         >>> from durolib import clearall
         >>> clearall()
-    
+
     Notes:
     -----
         Currently not working ...
@@ -100,7 +101,7 @@ def fillHoles(var):
 335 	# - x is array to be filled
 336 	# - max_nloops is max. no. iterations (Default is to keep going until
 337 	# there are no missing values)
-338 	
+338
 339 	proc fill_holes {
 340 	x
 341 	{max_nloops -1}
@@ -129,14 +130,14 @@ def fitPolynomial(var,time,polyOrder):
     -------
     The fitPolynomial(var,time,polyOrder) function returns a new variable which is the polyOrder
     estimate of the variable argument
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Usage:
     ------
         >>> from durolib import fitPolynomial
         >>> var_cubic = fitPolynomial(var,time,polyOrder=3)
-    
+
     Notes:
     -----
     - PJD  5 Aug 2013 - Implemented following examples from Pete G.
@@ -146,7 +147,7 @@ def fitPolynomial(var,time,polyOrder):
     if polyOrder > 3:
         print "".join(['** fitPolynomial Error: >cubic fits not supported **',])
         return
-    varFitted = mv.multiply(var,0.) ; # Preallocate output array    
+    varFitted = mv.multiply(var,0.) ; # Preallocate output array
     coefs,residuals,rank,singularValues,rcond = np.polyfit(time,var,polyOrder,full=True)
     for timeIndex in range(len(time)):
         timeVal = time[timeIndex]
@@ -157,7 +158,7 @@ def fitPolynomial(var,time,polyOrder):
         elif polyOrder == 3:
             varFitted[timeIndex] = (coefs[0]*(timeVal**3) + coefs[1]*(timeVal**2) + coefs[2]*timeVal + coefs[3])
     return varFitted
-    
+
 
 def fixInterpAxis(var):
     """
@@ -165,14 +166,14 @@ def fixInterpAxis(var):
     -------
     The fixInterpAxis(var) function corrects temporal axis so that genutil.statistics.linearregression
     returns coefficients which are unscaled by the time axis
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Usage:
     ------
         >>> from durolib import fixInterpAxis
         >>> (slope),(slope_err) = linearregression(fixInterpAxis(var),error=1,nointercept=1)
-    
+
     Notes:
     -----
         ...
@@ -191,14 +192,14 @@ def fixVarUnits(var,varName,report=False,logFile=None):
     Documentation for fixVarUnits():
     -------
     The fixVarUnits() function corrects units of salinity and converts thetao from K to degrees_C
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Usage:
     ------
         >>> from durolib import fixVarUnits
         >>> [var,var_fixed] = fixVarUnits(var,'so',True,'logfile.txt')
-    
+
     Notes:
     -----
         ...
@@ -247,23 +248,23 @@ def getGitInfo(filePath):
     Documentation for getGitInfo():
     -------
     The getGitInfo() function retrieves latest commit info specified by filePath
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Returns:
     -------
            gitTag[0] - commit hash
            gitTag[1] - commit author
            gitTag[2] - commit date and time
            gitTag[3] - commit notes
-           
-    Usage: 
+
+    Usage:
     ------
         >>> from durolib import getGitInfo
         >>> gitTag = getGitInfo(filePath)
-    
+
     Where filePath is a file which is monitored by git
-            
+
     Notes:
     -----
         When ...
@@ -281,7 +282,7 @@ def getGitInfo(filePath):
         else:
             gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
             gitTag.extend(["".join(gitStr.strip())])
-    
+
     return gitTag
 
 
@@ -291,34 +292,34 @@ def globalAttWrite(file_handle,options):
     -------
     The globalAttWrite() function writes standard global_attributes to an
     open netcdf specified by file_handle
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Returns:
     -------
            Nothing.
-    Usage: 
+    Usage:
     ------
         >>> from durolib import globalAttWrite
         >>> globalAttWrite(file_handle)
-    
+
     Where file_handle is a handle to an open, writeable netcdf file
-    
+
     Optional Arguments:
     -------------------
-    option=optionalArguments   
+    option=optionalArguments
     Restrictions: option has to be a string
     Default : ...
-    
+
     You can pass option='SOMETHING', ...
-    
+
     Examples:
     ---------
         >>> from durolib import globalAttWrite
         >>> f = cdms2.open('data_file_name','w')
         >>> globalAttWrite(f)
         # Writes standard global attributes to the netcdf file specified by file_handle
-            
+
     Notes:
     -----
         When ...
@@ -346,25 +347,25 @@ def keyboard(banner=None):
     -------
     The keyboard() function mimics matlab's keyboard function allowing control
     sent to the keyboard within a running script
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Returns:
     -------
            Nothing.
-    Usage: 
+    Usage:
     ------
         >>> from durolib import keyboard
         >>> keyboard()
-    
+
     Examples:
     ---------
         ...
-            
+
     Notes:
     -----
         ...
-    """    
+    """
     # use exception trick to pick up the current frame
     try:
         raise None
@@ -378,24 +379,103 @@ def keyboard(banner=None):
         code.interact(banner=banner,local=namespace)
     except SystemExit:
         return
-        
+
+
+def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
+    """
+    Documentation for makeCalendar():
+    -------
+    The makeCalendar() function creates a time calendar for given dates
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+    
+    Inputs:
+    -------
+           timeStart                - string time (e.g. '2001' or '2001-1-1 0:0:0.0')
+           timeEnd                  - string end time
+           calendarStep <optional>  - string either 'months' or 'days'
+           dayStep <optional>       - int
+    
+    Returns:
+    -------
+           time                     - cdms2 transient axis
+
+    Usage:
+    ------
+        >>> from durolib import makeCalendar
+        >>> time = makeCalendar('2001','2014',calendarStep='month')
+
+    Notes:
+    -----
+        There are issues with the daily calendar creation - likely requiring
+        tweaks to cdutil.times.setAxisTimeBoundsDaily
+        Consider reviewing calendar assignment in
+        /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
+    """
+    # First check inputs
+    if calendarStep not in ['days','months',]:
+        print '** makeCalendar error: calendarStep unknown, exiting..'
+        return
+    if not isinstance(timeStart,str) or not isinstance(timeEnd,str):
+        print '** makeCalendar error: timeStart or timeEnd invalid, exiting..'
+        return
+    try:
+        timeStartTest = cdt.comptime(int(timeStart))
+    except SystemExit,err:
+        print '** makeCalendar error: timeStart invalid - ',err
+        return
+    
+    # Create comptime objects
+    timeStart = cdt.comptime(int(timeStart))
+    test = re.compile('^[0-9]{4}$')
+    if test.match(timeEnd):
+        # Assume end of year
+        timeEnd = cdt.comptime(int(timeEnd),12,31,23,59,59)
+    # Set units for value conversion
+    timeUnitsStr = ''.join([calendarStep,' since ',str(timeStart.year)])
+    # Set times
+    timeStart   = int(timeStart.torelative(timeUnitsStr).value)
+    timeEnd     = int(timeEnd.torelative(timeUnitsStr).value)
+    if 'dayStep' in locals() and calendarStep == 'days':
+        times = np.float32(range(timeStart,(timeEnd+1),dayStep))
+    else:
+        times = np.float32(range(timeStart,(timeEnd+1)))
+    times                   = cdm.createAxis(times)
+    times.designateTime()
+    times.id                = 'time'
+    times.units             = timeUnitsStr
+    times.long_name         = 'time'
+    times.standard_name     = 'time'
+    times.axis              = 'T'    
+    if calendarStep == 'months':
+        cdu.setTimeBoundsMonthly(times)
+    elif calendarStep == 'days':
+        #cdu.setTimeBoundsDaily(times,frequency=(1./dayStep))
+        pass
+    times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year)]))
+    timeBounds  = times.getBounds()
+    times[:]     = (timeBounds[:,0]+timeBounds[:,1])/2.
+    
+    return times
+
+
 def mkDirNoOSErr(newdir,mode=0777):
     """
     Documentation for mkDirNoOSErr(newdir,mode=0777):
     -------
     The mkDirNoOSErr() function mimics os.makedirs however does not fail if the directory already
     exists
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Returns:
     -------
            Nothing.
-    Usage: 
+    Usage:
     ------
         >>> from durolib import mkDirNoOSErr
         >>> mkDirNoOSErr('newPath',mode=0777)
-            
+
     Notes:
     -----
     """
@@ -405,8 +485,8 @@ def mkDirNoOSErr(newdir,mode=0777):
         #Re-raise the error unless it's about an already existing directory
         if err.errno != errno.EEXIST or not os.path.isdir(newdir):
             raise
-    
-    
+
+
 def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
 
@@ -422,14 +502,14 @@ def spyderClean():
     Documentation for spyder_clean():
     -------
     The spyder_clean() function purges variables initialised upon startup
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
-    Usage: 
+
+    Usage:
     ------
         >>> from durolib import spyder_clean
         >>> spyder_clean()
-    
+
     Notes:
     -----
         Currently not working ...
@@ -447,14 +527,14 @@ def sysCallTimeout(cmd,timeout):
     -------
     The sysCallTimeout(cmd,timeout) function attempts to execute a system call (cmd) and times out in
     a specified time
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
-    Usage: 
+
+    Usage:
     ------
         >>> from durolib import sysCallTimeout
         >>> sysCallTimeout(cmd,timeout)
-    
+
     Notes:
     -----
     """
@@ -475,15 +555,15 @@ def trimModelList(modelFileList):
     The trimModelList(modelFileList) function takes a python list of model files
     and trims these for duplicates using file creation_date attribute along with
     temporal ordering info obtained from the file version identifier
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Usage:
     ------
-        >>> modelFileList = glob.glob(os.path.join(filePath,'*.nc')) ; # provides full directory/file path        
+        >>> modelFileList = glob.glob(os.path.join(filePath,'*.nc')) ; # provides full directory/file path
         >>> from durolib import trimModelList
         >>> modelFileListTrimmed = trimModelList(modelFileList)
-    
+
     Notes:
     -----
     - PJD  1 Apr 2014 - Implement sanity checks for r1i1p1 matching for e.g.
@@ -494,12 +574,12 @@ def trimModelList(modelFileList):
     if type(modelFileList) is not list:
         print '** Function argument not type list, exiting.. **'
         return ''
-    
+
     # Sort list and declare output
     modelFileList.sort()
     modelFileListTmp = []
     modelFileIndex = []
-    
+
     # Create subset modelFileList
     for file1 in modelFileList:
         file1   = file1.split('/')[-1]
@@ -510,17 +590,17 @@ def trimModelList(modelFileList):
         reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
-            return ''            
+            return ''
         modelFileListTmp.append('.'.join([mod,exp,rea]))
-        
+
     # Create unique list and index
     modelFileListTmpUnique = list(set(modelFileListTmp)) ; modelFileListTmpUnique.sort()
     findMatches = lambda searchList,elem: [[i for i, x in enumerate(searchList) if x == e] for e in elem]
-    modelFileListTmpIndex = findMatches(modelFileListTmp,modelFileListTmpUnique)        
-        
+    modelFileListTmpIndex = findMatches(modelFileListTmp,modelFileListTmpUnique)
+
     # Loop through unique list
     for count,modelNum in enumerate(modelFileListTmpIndex):
-        if len(modelFileListTmpIndex[count]) == 1: # Case single version            
+        if len(modelFileListTmpIndex[count]) == 1: # Case single version
             modelFileIndex.append(int(str(modelNum).strip('[]')))
         else: # Case multiple versions
             # Get version and creation_date info from file
@@ -528,7 +608,7 @@ def trimModelList(modelFileList):
             for index in modelFileListTmpIndex[count]:
                 file1 = modelFileList[index].split('/')[-1]
                 verInd = int(str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]'))
-                ver1 = file1.split('.')[verInd].replace('ver-','')                
+                ver1 = file1.split('.')[verInd].replace('ver-','')
                 f_h = cdm.open(modelFileList[index])
                 CD = f_h.creation_date
                 f_h.close()
@@ -537,7 +617,7 @@ def trimModelList(modelFileList):
                 modelFileListIndex.append(index)
             #print modelFileListVersion
             #print modelFileListCreationDate
-            
+
             # Use creation_date to determine latest file
             listLen = len(modelFileListCreationDate)
             modelFileListCreationDate = map(string.replace,modelFileListCreationDate,['T',]*listLen, [' ',]*listLen)
@@ -549,7 +629,7 @@ def trimModelList(modelFileList):
             ind = [modelFileListIndex[i] for i in maxes]
             #print modelFileListCreationDate
             #print maxes,ver,ind
-            
+
             # If creation_dates match check version info to determine latest file
             indTest = '-' ; #verTest = '-'
             if len(maxes) > 1:
@@ -571,24 +651,24 @@ def trimModelList(modelFileList):
 
     # Trim original list with new index
     modelFileListTrimmed = [modelFileList[i] for i in modelFileIndex]
-        
+
     #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex ; # Debugging
     return modelFileListTrimmed
-    
-    
+
+
 def writeToLog(logFilePath,textToWrite):
     """
     Documentation for writeToLog(logFilePath,textToWrite):
     -------
     The writeToLog() function writes specified text to a text log file
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
-    Usage: 
+
+    Usage:
     ------
         >>> from durolib import writeToLog
         >>> writeToLog(~/somefile.txt,'text to write to log file')
-    
+
     Notes:
     -----
         Current version appends a new line after each call to the function.
@@ -598,25 +678,25 @@ def writeToLog(logFilePath,textToWrite):
     if os.path.isfile(logFilePath):
         logHandle = open(logFilePath,'a') ; # Open to append
     else:
-        logHandle = open(logFilePath,'w') ; # Open to write     
+        logHandle = open(logFilePath,'w') ; # Open to write
     logHandle.write("".join([textToWrite,'\n']))
     logHandle.close()
-    
-    
+
+
 def writePacked(var,fileObject='tmp.nc'):
     """
     Documentation for writePacked(var,fileObject):
     -------
     The writePacked() function generates a 16-bit (int16) cdms2 variable and
     writes this to a netcdf file
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
-    Usage: 
+
+    Usage:
     ------
         >>> from durolib import writePacked
         >>> writePacked(var,'16bitPacked.nc')
-    
+
     Notes:
     -----
         TODO: clean up fileObject existence..
