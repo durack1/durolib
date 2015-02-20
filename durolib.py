@@ -464,7 +464,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     elif calendarStep == 'days':
         #cdu.setTimeBoundsDaily(times,frequency=(1./dayStep))
         pass
-    times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year)]))
+    times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year),'-1-1']))
     timeBounds  = times.getBounds()
     times[:]     = (timeBounds[:,0]+timeBounds[:,1])/2.
     
