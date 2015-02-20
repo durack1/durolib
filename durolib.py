@@ -1,25 +1,28 @@
 # -*- coding: utf-8 -*-
 """
+Documentation for durolib:
+-----
 Created on Mon May 27 16:49:02 2013
 
 Paul J. Durack 27th May 2013
 
-PJD  2 Jun 2013     - Added clearall and outer_locals functions
-PJD 13 Jun 2013     - Updated global_att_write to globalAttWrite
-PJD 13 Jun 2013     - Added writeToLog function
-PJD 26 Jun 2013     - Added fixInterpAxis function
-PJD 18 Jul 2013     - Sphinx docs/syntax http://pythonhosted.org/an_example_pypi_project/sphinx.html
-PJD 23 Jul 2013     - Added fixVarUnits function
-PJD 25 Jul 2013     - Updated fixVarUnits function to print and log changes
-PJD  5 Aug 2013     - Added fitPolynomial function following Pete G's code example
-PJD  9 Aug 2013     - Added writePacked function
-PJD  9 Aug 2013     - Added keyboard function
-PJD 22 Aug 2013     - Added setTimeBoundsYearly() to fixInterpAxis
-PJD  1 Apr 2014     - Added trimModelList
-PJD 20 Aug 2014     - Added mkDirNoOSErr and sysCallTimeout functions
-PJD 13 Oct 2014     - Added getGitInfo function
-                    - TODO: Consider implementing multivariate polynomial regression:
-                      https://github.com/mrocklin/multipolyfit
+|  PJD  2 Jun 2013  - Added clearall and outer_locals functions
+|  PJD 13 Jun 2013  - Updated global_att_write to globalAttWrite
+|  PJD 13 Jun 2013  - Added writeToLog function
+|  PJD 26 Jun 2013  - Added fixInterpAxis function
+|  PJD 18 Jul 2013  - Sphinx docs/syntax http://pythonhosted.org/an_example_pypi_project/sphinx.html
+|  PJD 23 Jul 2013  - Added fixVarUnits function
+|  PJD 25 Jul 2013  - Updated fixVarUnits function to print and log changes
+|  PJD  5 Aug 2013  - Added fitPolynomial function following Pete G's code example
+|  PJD  9 Aug 2013  - Added writePacked function
+|  PJD  9 Aug 2013  - Added keyboard function
+|  PJD 22 Aug 2013  - Added setTimeBoundsYearly() to fixInterpAxis
+|  PJD  1 Apr 2014  - Added trimModelList
+|  PJD 20 Aug 2014  - Added mkDirNoOSErr and sysCallTimeout functions
+|  PJD 13 Oct 2014  - Added getGitInfo function
+|  PJD 20 Feb 2015  - Added makeCalendar function
+|                   - TODO: Consider implementing multivariate polynomial regression:
+|                     https://github.com/mrocklin/multipolyfit
 
 This library contains all functions written to replicate matlab functionality in python
 
@@ -384,33 +387,33 @@ def keyboard(banner=None):
 def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     """
     Documentation for makeCalendar():
-    -------
+    -----
     The makeCalendar() function creates a time calendar for given dates
 
     Author: Paul J. Durack : pauldurack@llnl.gov
     
     Inputs:
-    -------
-           timeStart                - string time (e.g. '2001' or '2001-1-1 0:0:0.0')
-           timeEnd                  - string end time
-           calendarStep <optional>  - string either 'months' or 'days'
-           dayStep <optional>       - int
+    -----
+    
+    |   **timeStart** - string time (e.g. '2001' or '2001-1-1 0:0:0.0')
+    |   **timeEnd** - string end time
+    |   **calendarStep <optional>** - string either 'months' or 'days'
+    |   **dayStep <optional>** - int
     
     Returns:
-    -------
-           time                     - cdms2 transient axis
+    -----
+    
+    |   **time** - cdms2 transient axis
 
     Usage:
-    ------
-        >>> from durolib import makeCalendar
-        >>> time = makeCalendar('2001','2014',calendarStep='month')
+    -----
+    >>> from durolib import makeCalendar
+    >>> time = makeCalendar('2001','2014',calendarStep='month')
 
     Notes:
     -----
-        There are issues with the daily calendar creation - likely requiring
-        tweaks to cdutil.times.setAxisTimeBoundsDaily
-        Consider reviewing calendar assignment in
-        /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
+    |   There are issues with the daily calendar creation - likely requiring tweaks to cdutil.times.setAxisTimeBoundsDaily
+    |   Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
     """
     # First check inputs
     if calendarStep not in ['days','months',]:
