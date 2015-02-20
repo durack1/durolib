@@ -446,6 +446,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     times.units             = timeUnitsStr
     times.long_name         = 'time'
     times.standard_name     = 'time'
+    times.calendar          = 'gregorian'
     times.axis              = 'T'    
     if calendarStep == 'months':
         cdu.setTimeBoundsMonthly(times)
