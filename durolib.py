@@ -395,7 +395,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     Inputs:
     -----
     
-    |   **timeStart** - string time (e.g. '2001' or '2001-1-1 0:0:0.0')
+    |   **timeStart** - string start time (e.g. '2001' or '2001-1-1 0:0:0.0')
     |   **timeEnd** - string end time
     |   **calendarStep <optional>** - string either 'months' or 'days'
     |   **dayStep <optional>** - int
@@ -412,8 +412,9 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
 
     Notes:
     -----
-    |   There are issues with the daily calendar creation - likely requiring tweaks to cdutil.times.setAxisTimeBoundsDaily
-    |   Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
+    |   - TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
+    |   - There are issues with the daily calendar creation - likely requiring tweaks to cdutil.times.setAxisTimeBoundsDaily
+    |   - Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
     """
     # First check inputs
     if calendarStep not in ['days','months',]:
