@@ -44,7 +44,7 @@ from numpy.core.fromnumeric import shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
-##
+#%%
 
 ## Specify UVCDAT specific stuff ##
 # Turn off cdat ping reporting - Does this speed up Spyder?
@@ -60,7 +60,7 @@ cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
 ##
 
 ## Define useful functions ##
-
+#%%
 def clearAll():
     """
     Documentation for clearall():
@@ -81,11 +81,11 @@ def clearAll():
     for uniquevariable in [variable for variable in globals().copy() if variable[0] != "_" and variable != 'clearall']:
         del globals()[uniquevariable]
 
-
+#%%
 def environment():
     return False
 
-
+#%%
 def fillHoles(var):
     return var
     #http://tcl-nap.cvs.sourceforge.net/viewvc/tcl-nap/tcl-nap/library/nap_function_lib.tcl?revision=1.56&view=markup
@@ -125,8 +125,7 @@ def fillHoles(var):
 356 	}
     """
 
-
-
+#%%
 def fitPolynomial(var,time,polyOrder):
     """
     Documentation for fitPolynomial(var):
@@ -162,7 +161,7 @@ def fitPolynomial(var,time,polyOrder):
             varFitted[timeIndex] = (coefs[0]*(timeVal**3) + coefs[1]*(timeVal**2) + coefs[2]*timeVal + coefs[3])
     return varFitted
 
-
+#%%
 def fixInterpAxis(var):
     """
     Documentation for fixInterpAxis(var):
@@ -189,7 +188,7 @@ def fixInterpAxis(var):
     var.setAxis(0,t)
     return var
 
-
+#%%
 def fixVarUnits(var,varName,report=False,logFile=None):
     """
     Documentation for fixVarUnits():
@@ -245,7 +244,7 @@ def fixVarUnits(var,varName,report=False,logFile=None):
 
     return var,var_fixed
 
-
+#%%
 def getGitInfo(filePath):
     """
     Documentation for getGitInfo():
@@ -292,7 +291,7 @@ def getGitInfo(filePath):
 
     return gitTag
 
-
+#%%
 def globalAttWrite(file_handle,options):
     """
     Documentation for globalAttWrite():
@@ -345,12 +344,12 @@ def globalAttWrite(file_handle,options):
     file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
     file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
                                            '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
-
+#%%
 def inpaint(array,method):
     #/work/durack1/csiro/Backup/110808/Z_dur041_linux/bin/inpaint_nans/inpaint_nans.m
     return False
 
-
+#%%
 def keyboard(banner=None):
     """
     Documentation for keyboard():
@@ -390,7 +389,7 @@ def keyboard(banner=None):
     except SystemExit:
         return
 
-
+#%%
 def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=12,dayStep=1):
     """
     Documentation for makeCalendar():
@@ -485,7 +484,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
 
     return times
 
-
+#%%
 def mkDirNoOSErr(newdir,mode=0777):
     """
     Documentation for mkDirNoOSErr(newdir,mode=0777):
@@ -513,17 +512,17 @@ def mkDirNoOSErr(newdir,mode=0777):
         if err.errno != errno.EEXIST or not os.path.isdir(newdir):
             raise
 
-
+#%%
 def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
 
-
+#%%
 def smooth(array,method):
     #/apps/MATLAB/R2011b/toolbox/matlab/specgraph/smooth3.m
     #/apps/MATLAB/R2011b/toolbox/curvefit/curvefit/smooth.m
     return False
 
-
+#%%
 def sysCallTimeout(cmd,timeout):
     """
     Documentation for sysCallTimeout(cmd,timeout):
@@ -550,7 +549,7 @@ def sysCallTimeout(cmd,timeout):
     p.kill()
     raise OSError('sysCallTimeout: System call timed out')
 
-
+#%%
 def trimModelList(modelFileList):
     """
     Documentation for trimModelList(modelFileList):
@@ -658,7 +657,7 @@ def trimModelList(modelFileList):
     #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex ; # Debugging
     return modelFileListTrimmed
 
-
+#%%
 def writeToLog(logFilePath,textToWrite):
     """
     Documentation for writeToLog(logFilePath,textToWrite):
@@ -685,7 +684,7 @@ def writeToLog(logFilePath,textToWrite):
     logHandle.write("".join([textToWrite,'\n']))
     logHandle.close()
 
-
+#%%
 def writePacked(var,fileObject='tmp.nc'):
     """
     Documentation for writePacked(var,fileObject):
@@ -715,5 +714,3 @@ def writePacked(var,fileObject='tmp.nc'):
         fileObject = cdm.open(fileObject,'w')
     fileObject.write((var-var.add_offset)/var.scale_factor,dtype=np.int16)
     return
-
-##
