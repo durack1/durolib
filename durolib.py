@@ -527,8 +527,8 @@ def sysCallTimeout(cmd,timeout):
     """
     Documentation for sysCallTimeout(cmd,timeout):
     -------
-    The sysCallTimeout(cmd,timeout) function attempts to execute a system call (cmd) and times out in
-    a specified time
+    The sysCallTimeout(cmd,timeout) function attempts to execute a system call
+    (cmd) and times out in a specified time
 
     Author: Paul J. Durack : pauldurack@llnl.gov
 
