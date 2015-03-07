@@ -30,7 +30,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import cdat_info,cdtime,code,datetime,errno,inspect,os,pytz,re,string,sys,time
+import calendar,cdat_info,cdtime,code,datetime,errno,inspect,os,pytz,re,string,sys,time
 import cdms2 as cdm
 import cdtime as cdt
 import cdutil as cdu
@@ -256,12 +256,12 @@ def getGitInfo(filePath):
 
     Inputs:
     -----
-    
+
     |  **filePath** - a fully qualified file which is monitored by git
 
     Returns:
     -------
-    
+
     |  **gitTag[0]** - commit hash
     |  **gitTag[1]** - commit author
     |  **gitTag[2]** - commit date and time
@@ -304,9 +304,9 @@ def globalAttWrite(file_handle,options):
 
     Inputs:
     -----
-    
+
     |  **file_handle** - a cdms2 open, writeable file handle
-    
+
     Returns:
     -------
            Nothing.
@@ -391,25 +391,27 @@ def keyboard(banner=None):
         return
 
 
-def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
+def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=12,dayStep=1):
     """
     Documentation for makeCalendar():
     -----
     The makeCalendar() function creates a time calendar for given dates
 
     Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
     Inputs:
     -----
-    
+
     |  **timeStart** - string start time (e.g. '2001' or '2001-1-1 0:0:0.0')
     |  **timeEnd** - string end time
     |  **calendarStep <optional>** - string either 'months' or 'days'
+    |  **monthStart <optional>** - int
+    |  **monthEnd <optional>** - int
     |  **dayStep <optional>** - int
-    
+
     Returns:
     -----
-    
+
     |  **time** - cdms2 transient axis
 
     Usage:
@@ -430,27 +432,40 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     if not isinstance(timeStart,str) or not isinstance(timeEnd,str):
         print '** makeCalendar error: timeStart or timeEnd invalid, exiting..'
         return
+    if not (int(monthStart) in range(1,13) and int(monthEnd) in range(1,13)):
+        print '** makeCalendar error: monthStart or monthEnd invalid, exiting..'
+        return
     try:
-        timeStartTest = cdt.comptime(int(timeStart))
+        timeStartTest   = cdt.comptime(int(timeStart))
+        timeEndTest     = cdt.comptime(int(timeEnd))
     except SystemExit,err:
         print '** makeCalendar error: timeStart invalid - ',err
         return
-    
+
     # Create comptime objects
-    timeStart = cdt.comptime(int(timeStart))
+    if monthStart != 1:
+        timeStart = cdt.comptime(int(timeStart),int(monthStart))
+    else:
+        timeStart = cdt.comptime(int(timeStart))
     test = re.compile('^[0-9]{4}$')
-    if test.match(timeEnd):
-        # Assume end of year
-        timeEnd = cdt.comptime(int(timeEnd),12,31,23,59,59)
+    if monthEnd == 2:
+        if calendar.isleap(int(timeEnd)):
+            timeEnd = cdt.comptime(int(timeEnd),2,29,23,59,59)
+        else:
+            timeEnd = cdt.comptime(int(timeEnd),2,28,23,59,59)
+    elif monthEnd in [4,6,9,11]:
+        timeEnd = cdt.comptime(int(timeEnd),int(monthEnd),30,23,59,59)
+    else:
+        timeEnd = cdt.comptime(int(timeEnd),int(monthEnd),31,23,59,59)
     # Set units for value conversion
     timeUnitsStr = ''.join([calendarStep,' since ',str(timeStart.year)])
     # Set times
     timeStart   = int(timeStart.torelative(timeUnitsStr).value)
     timeEnd     = int(timeEnd.torelative(timeUnitsStr).value)
     if 'dayStep' in locals() and calendarStep == 'days':
-        times = np.float32(range(timeStart,(timeEnd+1),dayStep))
+        times = np.float32(range(timeStart,(timeEnd),dayStep))
     else:
-        times = np.float32(range(timeStart,(timeEnd+1)))
+        times = np.float32(range(timeStart,(timeEnd)))
     times                   = cdm.createAxis(times)
     times.designateTime()
     times.id                = 'time'
@@ -458,7 +473,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     times.long_name         = 'time'
     times.standard_name     = 'time'
     times.calendar          = 'gregorian'
-    times.axis              = 'T'    
+    times.axis              = 'T'
     if calendarStep == 'months':
         cdu.setTimeBoundsMonthly(times)
     elif calendarStep == 'days':
@@ -467,7 +482,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',dayStep=1):
     times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year),'-1-1']))
     timeBounds  = times.getBounds()
     times[:]     = (timeBounds[:,0]+timeBounds[:,1])/2.
-    
+
     return times
 
 
