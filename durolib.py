@@ -21,6 +21,7 @@ Paul J. Durack 27th May 2013
 |  PJD 20 Aug 2014  - Added mkDirNoOSErr and sysCallTimeout functions
 |  PJD 13 Oct 2014  - Added getGitInfo function
 |  PJD 20 Feb 2015  - Added makeCalendar function
+|  PJD 30 Apr 2015  - Fixed off by one issue with partial years in makeCalendar
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -420,6 +421,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
 
     Notes:
     -----
+    * PJD 30 Apr 2015 - Fixed 'off by one' error with partial years
     * TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
     * Issues with the daily calendar creation - likely require tweaks to cdutil.times.setAxisTimeBoundsDaily (range doesn't accept fractions, only ints)
     * Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
@@ -462,9 +464,10 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     timeStart   = int(timeStart.torelative(timeUnitsStr).value)
     timeEnd     = int(timeEnd.torelative(timeUnitsStr).value)
     if 'dayStep' in locals() and calendarStep == 'days':
-        times = np.float32(range(timeStart,(timeEnd),dayStep))
+        times = np.float32(range(timeStart,timeEnd+1,dayStep)) ; # range requires +1 to reach end points
     else:
-        times = np.float32(range(timeStart,(timeEnd)))
+        #times = np.float32(range(timeStart,(timeEnd)))
+        times = np.float32(range(timeStart,timeEnd+1)) ; # range requires +1 to reach end points
     times                   = cdm.createAxis(times)
     times.designateTime()
     times.id                = 'time'
