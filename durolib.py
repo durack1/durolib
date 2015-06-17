@@ -22,6 +22,7 @@ Paul J. Durack 27th May 2013
 |  PJD 13 Oct 2014  - Added getGitInfo function
 |  PJD 20 Feb 2015  - Added makeCalendar function
 |  PJD 30 Apr 2015  - Fixed off by one issue with partial years in makeCalendar
+|  PJD 16 Jun 2015  - Added 'noid' option in globalAttWrite
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -340,11 +341,14 @@ def globalAttWrite(file_handle,options):
     local_time_now              = time_now.replace(tzinfo = local)
     utc_time_now                = local_time_now.astimezone(pytz.utc)
     time_format                 = utc_time_now.strftime("%d-%m-%Y %H:%M:%S %p")
-    file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
-    file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
+    if options.lower() == 'noid':
+        file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
     file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
     file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
                                            '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+    if options.lower() == 'noid':
+        file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
+
 #%%
 def inpaint(array,method):
     #/work/durack1/csiro/Backup/110808/Z_dur041_linux/bin/inpaint_nans/inpaint_nans.m
