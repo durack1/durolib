@@ -341,10 +341,13 @@ def globalAttWrite(file_handle,options):
     local_time_now              = time_now.replace(tzinfo = local)
     utc_time_now                = local_time_now.astimezone(pytz.utc)
     time_format                 = utc_time_now.strftime("%d-%m-%Y %H:%M:%S %p")
-    if options.lower() == 'noid':
-        file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
-                                           '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+    if 'options' in locals() and not options == None:
+        if options.lower() == 'noid':
+            file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
+            file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
+                                                   '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+        else:
+            print '** Invalid options passed, skipping global attribute write.. **'
     else:
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
         file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
