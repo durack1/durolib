@@ -24,6 +24,7 @@ Paul J. Durack 27th May 2013
 |  PJD 30 Apr 2015  - Fixed off by one issue with partial years in makeCalendar
 |  PJD 16 Jun 2015  - Added 'noid' option in globalAttWrite
 |  PJD  3 Nov 2015  - Added globAndTrim, matchAndTrimBlanks and truncateVerInfo functions
+|  PJD  3 Nov 2015  - Moved UV-CDAT packages into a try block (cdat_info,cdms2,cdtime,MV2)
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -33,13 +34,8 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import calendar,cdtime,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
-import cdms2 as cdm
-import cdtime as cdt
-import cdutil as cdu
-#import genutil as genu
+import calendar,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
 #import matplotlib as plt
-import MV2 as mv
 import numpy as np
 import subprocess
 #import scipy as sp
@@ -49,14 +45,18 @@ from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 try:
     import cdat_info
+    # Turn off cdat ping reporting - Does this speed up Spyder?
+    cdat_info.ping = False
+    import cdms2 as cdm
+    import cdtime as cdt
+    #import genutil as genu
+    import MV2 as mv
 except:
     print '* cdat_info not available, skipping import *'
         
 #%%
 
 ## Specify UVCDAT specific stuff ##
-# Turn off cdat ping reporting - Does this speed up Spyder?
-#cdat_info.ping = False
 # Set netcdf file criterion - turned on from default 0s
 cdm.setCompressionWarnings(0) ; # Suppress warnings
 cdm.setNetcdfShuffleFlag(0)
