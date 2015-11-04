@@ -43,6 +43,8 @@ from numpy.core.fromnumeric import shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
+
+# Move UV-CDAT packages into try block
 try:
     import cdat_info
     # Turn off cdat ping reporting - Does this speed up Spyder?
@@ -76,14 +78,14 @@ def clearAll():
 
     Usage:
     ------
-        >>> from durolib import clearall
-        >>> clearall()
+        >>> from durolib import clearAll
+        >>> clearAll()
 
     Notes:
     -----
         Currently not working ...
     """
-    for uniquevariable in [variable for variable in globals().copy() if variable[0] != "_" and variable != 'clearall']:
+    for uniquevariable in [variable for variable in globals().copy() if variable[0] != "_" and variable != 'clearAll']:
         del globals()[uniquevariable]
 
 #%%
