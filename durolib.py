@@ -51,21 +51,18 @@ try:
     import cdtime as cdt
     #import genutil as genu
     import MV2 as mv
+    ## Specify UVCDAT specific stuff ##
+    # Set netcdf file criterion - turned on from default 0s
+    cdm.setCompressionWarnings(0) ; # Suppress warnings
+    cdm.setNetcdfShuffleFlag(0)
+    cdm.setNetcdfDeflateFlag(1)
+    cdm.setNetcdfDeflateLevelFlag(9)
+    # Hi compression: 1.4Gb file ; # Single salt variable
+    # No compression: 5.6Gb ; Standard (compression/shuffling): 1.5Gb ; Hi compression w/ shuffling: 1.5Gb
+    cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
+    ##
 except:
     print '* cdat_info not available, skipping import *'
-        
-#%%
-
-## Specify UVCDAT specific stuff ##
-# Set netcdf file criterion - turned on from default 0s
-cdm.setCompressionWarnings(0) ; # Suppress warnings
-cdm.setNetcdfShuffleFlag(0)
-cdm.setNetcdfDeflateFlag(1)
-cdm.setNetcdfDeflateLevelFlag(9)
-# Hi compression: 1.4Gb file ; # Single salt variable
-# No compression: 5.6Gb ; Standard (compression/shuffling): 1.5Gb ; Hi compression w/ shuffling: 1.5Gb
-cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
-##
 
 ## Define useful functions ##
 #%%
