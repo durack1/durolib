@@ -65,7 +65,7 @@ try:
     cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
     ##
 except:
-    print '* cdat_info not available, skipping import *'
+    print '* cdat_info not available, skipping UV-CDAT import *'
 
 ## Define useful functions ##
 #%%
