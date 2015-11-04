@@ -51,6 +51,7 @@ try:
     cdat_info.ping = False
     import cdms2 as cdm
     import cdtime as cdt
+    import cdutil as cdu
     #import genutil as genu
     import MV2 as mv
     ## Specify UVCDAT specific stuff ##
@@ -735,8 +736,8 @@ def trimModelList(modelFileList):
             # Use creation_date to determine latest file
             listLen = len(modelFileListCreationDate)
             modelFileListCreationDate = map(string.replace,modelFileListCreationDate,['T',]*listLen, [' ',]*listLen)
-            modelFileListCreationDate = map(cdtime.s2c,modelFileListCreationDate)
-            modelFileListCreationDate = map(cdtime.c2r,modelFileListCreationDate,['days since 1-1-1',]*listLen)
+            modelFileListCreationDate = map(cdt.s2c,modelFileListCreationDate)
+            modelFileListCreationDate = map(cdt.c2r,modelFileListCreationDate,['days since 1-1-1',]*listLen)
             modelFileListCreationDate = [x.value for x in modelFileListCreationDate]
             maxes = [i for i,x in enumerate(modelFileListCreationDate) if x == max(modelFileListCreationDate)]
             ver = [modelFileListVersion[i] for i in maxes]
