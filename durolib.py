@@ -23,6 +23,7 @@ Paul J. Durack 27th May 2013
 |  PJD 20 Feb 2015  - Added makeCalendar function
 |  PJD 30 Apr 2015  - Fixed off by one issue with partial years in makeCalendar
 |  PJD 16 Jun 2015  - Added 'noid' option in globalAttWrite
+|  PJD  3 Nov 2015  - Added globAndTrim, matchAndTrimBlanks and truncateVerInfo functions
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -32,7 +33,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import calendar,cdat_info,cdtime,code,datetime,errno,inspect,os,pytz,re,string,sys,time
+import calendar,cdtime,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
 import cdms2 as cdm
 import cdtime as cdt
 import cdutil as cdu
@@ -46,11 +47,16 @@ from numpy.core.fromnumeric import shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
+try:
+    import cdat_info
+except:
+    print '* cdat_info not available, skipping import *'
+        
 #%%
 
 ## Specify UVCDAT specific stuff ##
 # Turn off cdat ping reporting - Does this speed up Spyder?
-cdat_info.ping = False
+#cdat_info.ping = False
 # Set netcdf file criterion - turned on from default 0s
 cdm.setCompressionWarnings(0) ; # Suppress warnings
 cdm.setNetcdfShuffleFlag(0)
@@ -335,6 +341,7 @@ def globalAttWrite(file_handle,options):
     -----
     ...
     """
+    import cdat_info
     # Create timestamp, corrected to UTC for history
     local                       = pytz.timezone("America/Los_Angeles")
     time_now                    = datetime.datetime.now();
@@ -354,6 +361,36 @@ def globalAttWrite(file_handle,options):
         file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
                                            '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
+
+#%%
+def globAndTrim(path):
+    """
+    Documentation for globAndTrim():
+    -------
+    The globAndTrim() function wraps trimModelList to take a single path argument
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Returns:
+    -------
+           List containing file paths
+    Usage:
+    ------
+        >>> from durolib import globAndTrim
+        >>> globAndTrim('/path/to/data')
+
+    Examples:
+    ---------
+        ...
+
+    Notes:
+    -----
+        ...
+    """
+    outList = glob.glob(os.path.join(path,'*.xml'))
+    outList = trimModelList(outList) ; # only need to match model, no version info required
+    outList.sort()
+    return outList
 
 #%%
 def inpaint(array,method):
@@ -496,6 +533,69 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     times[:]     = (timeBounds[:,0]+timeBounds[:,1])/2.
 
     return times
+
+#%%
+def matchAndTrimBlanks(varList,listFilesList,newVarId):
+    """
+    Documentation for matchAndTrimBlanks():
+    -------
+    The matchAndTrimBlanks() function takes a nested list of files, a
+    corresponding list of variable names and a new variable name and returns a
+    nested list containing matched files for differing variables
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Returns:
+    -------
+           Nested list containing input list and trimmed sublists
+    Usage:
+    ------
+        >>> from durolib import matchAndTrimBlanks
+        >>> soMatches = matchAndTrimBlanks(varList,listFilesList,newVarId)
+
+    Examples:
+    ---------
+        >>> varList = ['so','tos','tas','wfo','areacello']
+        >>> listFilesList = [so_fileList,tos_fileList,tas_fileList,wfo_fileList,fx_fileList]
+        >>> newVarId = 'soMatches'
+        >>> soMatches = matchAndTrimBlanks(varList,listFilesList,newVarId)
+
+    Notes:
+    -----
+        ...
+    """
+    masterVar = varList[0]
+    outSlots = len(varList)+1
+    varMatchList = [[None] * outSlots for i in range(len(listFilesList[0][0][:]))]
+    # For each model_noRealm in master List
+    for x,modelNoRealm in enumerate(listFilesList[0][3][:]):
+        varMatchList[x][0] = listFilesList[0][0][x]
+        masterVarDot = ''.join(['.',masterVar,'.'])
+        newVarDot = ''.join(['.',newVarId,'.'])
+        # For each variable list - Pair masterVar with matches
+        for y in range(0,len(varList)):
+            # Test if fixed field - only match model
+            if varList[y] in ['areacella','areacello','basin','deptho','orog','sftlf','sftof','volcello']:
+                masterTest = modelNoRealm.split('.')[0]
+                modOnly = True
+            else:
+                masterTest = modelNoRealm
+                modOnly = False
+            # Use try to deal with non-index
+            try:
+                modTest = []
+                if modOnly:
+                    for z,model in enumerate(listFilesList[y][3]):
+                        modTest += [listFilesList[y][3][z].split('.')[0]]
+                else:
+                    modTest = listFilesList[y][3]
+                index = modTest.index(masterTest)
+                varMatchList[x][y] = listFilesList[y][0][index]
+            except:
+                print format(x,'03d'),''.join(['No ',varList[y],' match for ',masterVar,': ',modelNoRealm])
+        # Create output fileName
+        varMatchList[x][outSlots-1] = replace(replace(varMatchList[x][0].split('/')[-1],masterVarDot,newVarDot),'.latestX.xml','.nc')
+    return varMatchList
 
 #%%
 def mkDirNoOSErr(newdir,mode=0777):
@@ -669,6 +769,43 @@ def trimModelList(modelFileList):
 
     #return modelFileListTrimmed,modelFileIndex,modelFileListTmp,modelFileListTmpUnique,modelFileListTmpIndex ; # Debugging
     return modelFileListTrimmed
+
+#%%
+def truncateVerInfo(fileList,varId,modelSuite):
+    """
+    Documentation for truncateVerInfo():
+    -------
+    The truncateVerInfo() function takes a list of files and returns a nested
+    list containing trimmed sublists
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Returns:
+    -------
+           Nested list containing input list and trimmed sublists
+    Usage:
+    ------
+        >>> from durolib import truncateVerInfo
+        >>> truncateVerInfo(fileList,'so','cmip5')
+
+    Examples:
+    ---------
+        ...
+
+    Notes:
+    -----
+        ...
+    """
+    fileList_noVar,fileList_noVer,fileList_noRealm = [[] for _ in range(3)]
+    varId = ''.join(['.',varId])
+    for infile in fileList:
+        tmp = replace(replace(replace(infile.split('/')[-1],varId,''),''.join([modelSuite,'.']),''),'.latestX.xml','')
+        fileList_noVar += [tmp];
+        tmp = '.'.join(tmp.split('.')[0:-1]) ; # truncate version info
+        fileList_noVer += [tmp]
+        tmp = '.'.join(tmp.split('.')[0:-3]) ; # truncate realm and temporal info
+        fileList_noRealm += [tmp]
+    return [fileList,fileList_noVar,fileList_noVer,fileList_noRealm]
 
 #%%
 def writeToLog(logFilePath,textToWrite):
