@@ -25,6 +25,7 @@ Paul J. Durack 27th May 2013
 |  PJD 16 Jun 2015  - Added 'noid' option in globalAttWrite
 |  PJD  3 Nov 2015  - Added globAndTrim, matchAndTrimBlanks and truncateVerInfo functions
 |  PJD  3 Nov 2015  - Moved UV-CDAT packages into a try block (cdat_info,cdms2,cdtime,MV2)
+|  PJD 17 Nov 2015  - Added daysBetween function
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -88,6 +89,28 @@ def clearAll():
     """
     for uniquevariable in [variable for variable in globals().copy() if variable[0] != "_" and variable != 'clearAll']:
         del globals()[uniquevariable]
+
+#%%
+def daysBetween(d1, d2):
+    """
+    Documentation for daysBetween():
+    -------
+    The daysBetween() function calculates days between two dates (strings)
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Usage:
+    ------
+        >>> from durolib import daysBetween
+        >>> daysBetween('2015-11-17','2015-12-25')
+
+    Notes:
+    -----
+        ...
+    """
+    d1 = datetime.strptime(d1, "%Y-%m-%d")
+    d2 = datetime.strptime(d2, "%Y-%m-%d")
+    return abs((d2 - d1).days)
 
 #%%
 def environment():
