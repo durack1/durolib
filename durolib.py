@@ -26,6 +26,7 @@ Paul J. Durack 27th May 2013
 |  PJD  3 Nov 2015  - Added globAndTrim, matchAndTrimBlanks and truncateVerInfo functions
 |  PJD  3 Nov 2015  - Moved UV-CDAT packages into a try block (cdat_info,cdms2,cdtime,MV2)
 |  PJD 17 Nov 2015  - Added daysBetween function
+|  PJD 19 Nov 2015  - Added scrubNaNAndMask function
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -40,7 +41,7 @@ import calendar,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
 import numpy as np
 import subprocess
 #import scipy as sp
-from numpy.core.fromnumeric import shape
+from numpy.core import isnan,shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
@@ -651,6 +652,31 @@ def mkDirNoOSErr(newdir,mode=0777):
 #%%
 def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
+
+#%%
+def scrubNaNAndMask(var,maskVar):
+    """
+    Documentation for scrubNaNAndMask(var,maskVar):
+    -------
+    The scrubNaNAndMask(var,maskVar) function determines NaN values within a
+    numpy matrix and replaces these with 1e+20
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Usage:
+    ------
+        >>> from durolib import scrubNaNAndMask
+        >>> noNanVar = scrubNaNAndMask(var,maskVar)
+
+    Notes:
+    -----
+    """
+    # Check for NaNs
+    nanvals = isnan(var)
+    var[nanvals] = 1e+20
+    var = mv.masked_where(maskVar>=1e+20,var)
+    var = mv.masked_where(maskVar.mask,var)
+    return var
 
 #%%
 def smooth(array,method):
