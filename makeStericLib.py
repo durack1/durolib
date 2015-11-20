@@ -2,17 +2,17 @@
 import gc,os#,sys
 import cdms2 as cdm
 import cdutil as cdu
-import MV2 as mv
 import numpy as np
 np.seterr(all='ignore') ; # Cautious use of this turning all error reporting off - shouldn't be an issue as using masked arrays
 import seawater as sw ; # was seawater.csiro
-from durolib import getGitInfo,globalAttWrite
-from numpy import array,isnan,tile,shape,transpose ; #mod
+from durolib import getGitInfo,globalAttWrite,scrubNaNAndMask
+from numpy import array,tile,shape,transpose ; #mod
 from string import replace
 #import matplotlib as plt
 #from matplotlib.cm import RdBu_r
 #import seawater.gibbs as teos10
 
+#%%
 # Set netcdf file criterion - turned on from default 0s
 cdm.setCompressionWarnings(0) ; # Suppress warnings
 cdm.setNetcdfShuffleFlag(0)
@@ -22,16 +22,7 @@ cdm.setNetcdfDeflateLevelFlag(9)
 # No compression: 5.6Gb ; Standard (compression/shuffling): 1.5Gb ; Hi compression w/ shuffling: 1.5Gb
 cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
 
-
-def scrubNaNAndMask(var,maskVar):
-    # Check for NaNs
-    nanvals = isnan(var)
-    var[nanvals] = 1e+20
-    var = mv.masked_where(maskVar>=1e+20,var)
-    var = mv.masked_where(maskVar.mask,var)
-    return var
-
-
+#%%
 def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     """
     The makeSteric() function takes 3D (not temporal) arguments and creates
@@ -487,6 +478,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     # Cleanup workspace
     del(outFileName) ; gc.collect()
 
+#%%
 ## Heat content - quick plots to check we're on track - all look good
 '''
 plt.close('all')
