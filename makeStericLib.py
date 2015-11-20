@@ -12,8 +12,7 @@ from string import replace
 #from matplotlib.cm import RdBu_r
 #import seawater.gibbs as teos10
 
-#%%
-# Set netcdf file criterion - turned on from default 0s
+#%% Set netcdf file criterion - turned on from default 0s
 cdm.setCompressionWarnings(0) ; # Suppress warnings
 cdm.setNetcdfShuffleFlag(0)
 cdm.setNetcdfDeflateFlag(1)
