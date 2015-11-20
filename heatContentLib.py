@@ -11,14 +11,15 @@ import cdutil as cdu
 import numpy as np
 import MV2 as mv
 import seawater as sw ; # was seawater.csiro
+from durolib import scrubNaNAndMask
 #from matplotlib import pyplot as plt
-from numpy import isnan,tile,transpose
+from numpy import tile,transpose
 from scipy import interpolate
 #from matplotlib.cm import RdBu_r
 
 np.seterr(all='ignore') ; # Cautious use of this turning all error reporting off - shouldn't be an issue as using masked arrays
 
-# Set netcdf file criterion - turned on from default 0s
+#%% Set netcdf file criterion - turned on from default 0s
 cdm.setCompressionWarnings(0) ; # Suppress warnings
 cdm.setNetcdfShuffleFlag(0)
 cdm.setNetcdfDeflateFlag(1)
@@ -27,28 +28,12 @@ cdm.setNetcdfDeflateLevelFlag(9)
 # No compression: 5.6Gb ; Standard (compression/shuffling): 1.5Gb ; Hi compression w/ shuffling: 1.5Gb
 cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
 
-#%%
-# Purge spyder variables
-if 'e' in locals():
-    del(e,pi,sctypeNA,typeNA)
-    gc.collect()
-#%%
+#%% Define functions
 
-# Define functions
 def maskFill(mask,points,index):
     interpolant = interpolate.LinearNDInterpolator(points[index,:],np.array(mask.flatten())[index]) ; # Create interpolant
     maskFilled = interpolant(points[:,0].squeeze(),points[:,1].squeeze()) ; # Use interpolant to create filled matrix    
     return maskFilled
-
-
-def scrubNaNAndMask(var,maskVar):
-    # Check for NaNs
-    nanvals = isnan(var)
-    var[nanvals] = 1e+20
-    var = mv.masked_where(maskVar>=1e+20,var)
-    var = mv.masked_where(maskVar.mask,var)
-    return var
-
 
 def makeHeatContent(salt,temp,destMask,thetao,pressure):
     # Remap variables to short names
