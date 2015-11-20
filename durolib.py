@@ -41,7 +41,7 @@ import calendar,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
 import numpy as np
 import subprocess
 #import scipy as sp
-from numpy.core import isnan,shape
+from numpy import isnan,shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
