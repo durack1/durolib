@@ -574,13 +574,13 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
 
     # Remap variables to short names
     #print salt.getAxisIds()
-    s       = salt(squeeze=1)
+    s       = salt(squeeze=1) ; # Trim off singleton time dimension
     #print s.getAxisIds()
     t       = temp(squeeze=1)
     mask    = destMask
     #print mask.getAxisIds()
     del(salt,temp,destMask) ; gc.collect()
-    depthInd = 0 ; # Set depth index
+    depthInd = 0 ; # Set depth coordinate index
     
     #print 's:    ',s.min(),s.max()
     #print 't:    ',t.min(),t.max()
@@ -614,7 +614,6 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     
     #print 'pres: ',pressureLevels.min(),pressureLevels.max()
     #print pressureLevels.shape
-    
     #print s.shape
     #print t.shape
     #print mask.shape
@@ -640,7 +639,6 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     
     # Correct instances of NaN values and fix masks - applied before cdms variables are created otherwise names/ids/attributes are reset
     heatContent     = scrubNaNAndMask(heatContent,s)    
-
     #print 'hc:   ',heatContent.min(),heatContent.max()
 
     # Interpolate to standard levels - inputs heatContent,levels
