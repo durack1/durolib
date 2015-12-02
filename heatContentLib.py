@@ -147,7 +147,8 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #print heatContent_depthInteg.shape
 
     # Interpolate in x,y - inputs heatContent
-    tmp1 = heatContent_depthInteg.regrid(mask.getGrid(),regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
+    #tmp1 = heatContent_depthInteg.regrid(mask.getGrid(),regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
+    tmp1 = heatContent_depthInteg.regrid(mask,regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
     #print tmp1.shape
     
     tmp1 = mv.where(tmp1<0,0,tmp1) ; # Fix for negative values

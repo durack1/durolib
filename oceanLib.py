@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-import gc,os#,sys
+import gc,os,pdb#,sys
 import cdms2 as cdm
 import cdutil as cdu
 import MV2 as mv
@@ -653,8 +653,13 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     
     # Reset variable axes
     heatContent.setAxis(0,s.getAxis(0))
-    heatContent.setAxis(1,s.getAxis(1))
-    heatContent.setAxis(2,s.getAxis(2))
+    #heatContent.setAxis(1,s.getAxis(1))
+    #heatContent.setAxis(2,s.getAxis(2))
+
+    pdb.set_trace()
+    
+    heatContent.setGrid(s.getGrid())
+
 
     #print heatContent.shape
     #print heatContent.getAxisIds()
@@ -677,11 +682,15 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #print 'hc_interp:',heatContent_depthInterp.min(),heatContent_depthInterp.max()
 
     # Integrate to 700 dbar - inputs heatContent
-    heatContent_depthInteg = cdu.averager(heatContent_depthInterp[0:14,...],axis=0,weights='weighted',action='sum')(squeeze=1) # Calculate depth-weighted-integrated thetao
-    #print heatContent_depthInteg.shape
 
+    heatContent_depthInteg = cdu.averager(heatContent_depthInterp[0:14,...],axis=0,weights='weighted',action='sum')(squeeze=1) # Calculate depth-weighted-integrated thetao
+    # Assign all axis info
+    
+    #print heatContent_depthInteg.shape
+    pdb.set_trace()
     # Interpolate in x,y - inputs heatContent
-    tmp1 = heatContent_depthInteg.regrid(mask.getGrid(),regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
+    #tmp1 = heatContent_depthInteg.regrid(mask.getGrid(),regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
+    tmp1 = heatContent_depthInteg.regrid(mask,regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
     #print tmp1.shape
     
     tmp1 = mv.where(tmp1<0,0,tmp1) ; # Fix for negative values
