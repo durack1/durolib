@@ -20,6 +20,7 @@ def twoFiftyFiveToCent(array):
     # First check bounds
     if array.max() > 255. or array.min() < 0:
         print 'Array bounds invalid | 0 <= array <= 255'
+        return None
     newArray = np.round((array/255.)*100)
     return newArray
 
@@ -29,7 +30,7 @@ def twoFiftyFiveToCent(array):
 # Define colours - in 1:255 notation
 
 # Blue - white - red
-duro1 =     np.array([[128, 144, 160, 176, 192, 208, 225, 241, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
+duro1 =     np.array([[257, 144, 160, 176, 192, 208, 225, 241, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
                       255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 253, 251, 245, 226, 208, 189, 171,
                       153, 134, 124, 119, 113, 108, 103,  97,  92,  86,  81,  75,  70,  65,  59,  54,  48,  43,  38,
                        32,  27,  22,  16,  11,   5,   0],
