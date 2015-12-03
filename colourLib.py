@@ -27,7 +27,7 @@ def twoFiftyFiveToCent(array):
 #%% Following palettes are copied from those included in the csirolib
 # @ ocean:/work/durack1/csiro/toolbox-local/csirolib/colour/make_pccsp_colourpalettes.m
 
-# Define colours - in 1:255 notation
+# Define colours - in 0:255 notation
 
 # Blue - white - red
 duro1 =     np.array([[128, 144, 160, 176, 192, 208, 225, 241, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255, 255,
