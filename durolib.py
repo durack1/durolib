@@ -27,6 +27,7 @@ Paul J. Durack 27th May 2013
 |  PJD  3 Nov 2015  - Moved UV-CDAT packages into a try block (cdat_info,cdms2,cdtime,MV2)
 |  PJD 17 Nov 2015  - Added daysBetween function
 |  PJD 19 Nov 2015  - Added scrubNaNAndMask function
+|  PJD  3 Dec 2015  - Added santerTime function
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -652,6 +653,39 @@ def mkDirNoOSErr(newdir,mode=0777):
 #%%
 def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
+
+#%%
+def santerTime(array):
+        """
+        Documentation for santerTime(array):
+        -------
+        The santerTime(array) function converts a known-time array to the
+        standard time calendar
+    
+        Author: Paul J. Durack : pauldurack@llnl.gov
+    
+        Usage:
+        ------
+            >>> from durolib import santerTime
+            >>> newVar = santerTime(var)
+    
+        Notes:
+        -----
+        """
+        # Set time_since - months 1800-1-1
+        time = array.getTime()
+        time_new = []
+        for tt in time:
+            reltime = cdt.reltime(tt,time.units)
+            time_new.append(cdt.r2r(reltime,'months since 1800-1-1').value)
+        time_axis = cdm.createAxis(time_new)
+        time_axis.id = 'time'
+        time_axis.units = 'months since 1800-1-1'
+        time_axis.axis = 'T'
+        time_axis.calendar = 'gregorian'
+        array.setAxis(0,time_axis)
+        cdu.setTimeBoundsMonthly(array)
+        return array
 
 #%%
 def scrubNaNAndMask(var,maskVar):
