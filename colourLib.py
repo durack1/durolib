@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 """
-Documentation for colourlib:
+Documentation for colourLib:
 -----
 Created on Wed Dec  2 12:17:06 2015
 
