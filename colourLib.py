@@ -7,6 +7,7 @@ Created on Wed Dec  2 12:17:06 2015
 Paul J. Durack 2nd December 2015
 
 |  PJD  2 Dec 2015  - Added matlab colour palettes
+|                   - TODO: Consider other palettes in /work/durack1/csiro/toolbox-local/csirolib/colour
 
 @author: durack1
 """
