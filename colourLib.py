@@ -25,7 +25,7 @@ def twoFiftyFiveToCent(array):
     return newArray
 
 #%% Following palettes are copied from those included in the csirolib
-# @ /work/durack1/csiro/toolbox-local/csirolib/colour/make_pccsp_colourpalettes.m
+# @ ocean:/work/durack1/csiro/toolbox-local/csirolib/colour/make_pccsp_colourpalettes.m
 
 # Define colours - in 1:255 notation
 
