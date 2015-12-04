@@ -655,34 +655,51 @@ def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
 
 #%%
-def santerTime(array):
+def santerTime(array,calendar=None):
         """
-        Documentation for santerTime(array):
+        Documentation for santerTime(array,calendar):
         -------
         The santerTime(array) function converts a known-time array to the
-        standard time calendar
+        standard time calendar - if non-gregorian the source calendar should
+        be specified for accurate conversion
+        
+        Specified calendars can be one of the 5 calendars available within
+        the cdtime module:
+            GregorianCalendar
+            MixedCalendar
+            JulianCalendar
+            NoLeapCalendar
+            Calendar360
+        For more information consult:
+            http://uvcdat.llnl.gov/documentation/cdms/cdms_3.html#3.2
     
         Author: Paul J. Durack : pauldurack@llnl.gov
     
         Usage:
         ------
             >>> from durolib import santerTime
-            >>> newVar = santerTime(var)
+            >>> import cdtime
+            >>> newVar = santerTime(var,calendar=cdtime.NoLeapCalendar)
     
         Notes:
         -----
         """
+        # Test calendar
+        if calendar:
+            cdtCalendar  = calendar
+        else:
+            cdtCalendar  = cdt.GregorianCalendar
         # Set time_since - months 1800-1-1
-        time = array.getTime()
-        time_new = []
+        time                = array.getTime()
+        time_new            = []
         for tt in time:
             reltime = cdt.reltime(tt,time.units)
-            time_new.append(cdt.r2r(reltime,'months since 1800-1-1').value)
-        time_axis = cdm.createAxis(time_new)
-        time_axis.id = 'time'
-        time_axis.units = 'months since 1800-1-1'
-        time_axis.axis = 'T'
-        time_axis.calendar = 'gregorian'
+            time_new.append(reltime.torel('months since 1800-1-1',cdtCalendar).value)
+        time_axis           = cdm.createAxis(time_new)
+        time_axis.id        = 'time'
+        time_axis.units     = 'months since 1800-1-1'
+        time_axis.axis      = 'T'
+        time_axis.calendar  = 'gregorian'
         array.setAxis(0,time_axis)
         cdu.setTimeBoundsMonthly(array)
         return array
