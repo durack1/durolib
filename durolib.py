@@ -28,6 +28,7 @@ Paul J. Durack 27th May 2013
 |  PJD 17 Nov 2015  - Added daysBetween function
 |  PJD 19 Nov 2015  - Added scrubNaNAndMask function
 |  PJD  3 Dec 2015  - Added santerTime function
+|  PJD 25 May 2016  - Removed pytz as standard library import
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -37,7 +38,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import calendar,code,datetime,errno,glob,inspect,os,pytz,re,string,sys,time
+import calendar,code,datetime,errno,glob,inspect,os,re,string,sys,time
 #import matplotlib as plt
 import numpy as np
 import subprocess
@@ -366,7 +367,7 @@ def globalAttWrite(file_handle,options):
     -----
     ...
     """
-    import cdat_info
+    import cdat_info,pytz
     # Create timestamp, corrected to UTC for history
     local                       = pytz.timezone("America/Los_Angeles")
     time_now                    = datetime.datetime.now();
