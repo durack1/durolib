@@ -490,11 +490,12 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     Usage:
     -----
     >>> from durolib import makeCalendar
-    >>> time = makeCalendar('2001','2014',calendarStep='month')
+    >>> time = makeCalendar('2001','2014',calendarStep='months')
 
     Notes:
     -----
     * PJD 30 Apr 2015 - Fixed 'off by one' error with partial years
+    * PJD  7 Jun 2016 - Corrected doc string for calendarStep argument
     * TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
     * Issues with the daily calendar creation - likely require tweaks to cdutil.times.setAxisTimeBoundsDaily (range doesn't accept fractions, only ints)
     * Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
@@ -556,7 +557,8 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
         pass
     times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year),'-1-1']))
     timeBounds  = times.getBounds()
-    times[:]     = (timeBounds[:,0]+timeBounds[:,1])/2.
+    times[:]    = (timeBounds[:,0]+timeBounds[:,1])/2.
+    #times[:]    = times[:]-1 ; # Correct off by one error - invalid correction
 
     return times
 
@@ -663,7 +665,7 @@ def santerTime(array,calendar=None):
         The santerTime(array) function converts a known-time array to the
         standard time calendar - if non-gregorian the source calendar should
         be specified for accurate conversion
-        
+
         Specified calendars can be one of the 5 calendars available within
         the cdtime module:
             GregorianCalendar
@@ -673,15 +675,15 @@ def santerTime(array,calendar=None):
             Calendar360
         For more information consult:
             http://uvcdat.llnl.gov/documentation/cdms/cdms_3.html#3.2
-    
+
         Author: Paul J. Durack : pauldurack@llnl.gov
-    
+
         Usage:
         ------
             >>> from durolib import santerTime
             >>> import cdtime
             >>> newVar = santerTime(var,calendar=cdtime.NoLeapCalendar)
-    
+
         Notes:
         -----
         """
