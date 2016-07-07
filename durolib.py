@@ -29,6 +29,7 @@ Paul J. Durack 27th May 2013
 |  PJD 19 Nov 2015  - Added scrubNaNAndMask function
 |  PJD  3 Dec 2015  - Added santerTime function
 |  PJD 25 May 2016  - Removed pytz as standard library import
+|  PJD  7 Jul 2016  - Updated makeCalendar to correct off by 1 error
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -496,6 +497,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     -----
     * PJD 30 Apr 2015 - Fixed 'off by one' error with partial years
     * PJD  7 Jun 2016 - Corrected doc string for calendarStep argument
+    * PJD  7 Jul 2016 - Fixed makeCalendar('1854','2016',monthStart='01',monthEnd='06',calendarStep='months') off by one error
     * TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
     * Issues with the daily calendar creation - likely require tweaks to cdutil.times.setAxisTimeBoundsDaily (range doesn't accept fractions, only ints)
     * Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
@@ -537,11 +539,12 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     # Set times
     timeStart   = int(timeStart.torelative(timeUnitsStr).value)
     timeEnd     = int(timeEnd.torelative(timeUnitsStr).value)
+
     if 'dayStep' in locals() and calendarStep == 'days':
-        times = np.float32(range(timeStart,timeEnd+1,dayStep)) ; # range requires +1 to reach end points
+        times = np.float32(range(timeStart,timeEnd,dayStep)) ; # timeEnd/range requires +1 to reach end points (invalid correction 160707)
     else:
         #times = np.float32(range(timeStart,(timeEnd)))
-        times = np.float32(range(timeStart,timeEnd+1)) ; # range requires +1 to reach end points
+        times = np.float32(range(timeStart,timeEnd)) ; # timeEnd/range requires +1 to reach end points (invalid correction 160707)
     times                   = cdm.createAxis(times)
     times.designateTime()
     times.id                = 'time'
@@ -558,7 +561,7 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year),'-1-1']))
     timeBounds  = times.getBounds()
     times[:]    = (timeBounds[:,0]+timeBounds[:,1])/2.
-    #times[:]    = times[:]-1 ; # Correct off by one error - invalid correction
+    #times[:]    = times[:]-1 ; # Correct off by one error (invalid correction 160707)
 
     return times
 
