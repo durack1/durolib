@@ -1,0 +1,23 @@
+package:
+    name: durolib
+    version: 1.0
+
+source:
+    git_rev: master
+    git_url: git://github.com/durack1/durolib.git
+
+build:
+  number: 0
+ 
+requirements:
+  build:
+    - python
+    - setuptools
+  run:
+    - python
+    - cdms2
+    - cdutil
+    - pytz
+about:
+    home:  http://github.com/durack1/durolib
+

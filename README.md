@@ -1,4 +1,4 @@
-pylib
+durolib
 =====
 
 python generic library
