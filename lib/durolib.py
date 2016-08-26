@@ -31,11 +31,7 @@ Paul J. Durack 27th May 2013
 |  PJD  3 Dec 2015  - Added santerTime function
 |  PJD 25 May 2016  - Removed pytz as standard library import
 |  PJD  7 Jul 2016  - Updated makeCalendar to correct off by 1 error
-
-
 |  PJD 15 Aug 2016  - Added readJsonCreateDict function
-
-
 |  PJD 25 Aug 2016  - Added 'years' calendarStep argument to makeCalendar
 |  PJD 26 Aug 2016  - Add shebang
 |                   - TODO: Consider implementing multivariate polynomial regression:
@@ -47,7 +43,7 @@ This library contains all functions written to replicate matlab functionality in
 """
 
 ## Import common modules ##
-import calendar,code,datetime,errno,glob,inspect,os,re,string,sys,time
+import calendar,code,datetime,errno,glob,inspect,json,os,re,ssl,string,sys,time,urllib2
 #import matplotlib as plt
 import numpy as np
 import subprocess
