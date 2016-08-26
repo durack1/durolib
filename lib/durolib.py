@@ -311,23 +311,43 @@ def getGitInfo(filePath):
 
     Notes:
     -----
+    * PJD 26 Aug 2016 - Showing tags, see http://stackoverflow.com/questions/4211604/show-all-tags-in-git-log
+    * PJD 26 Aug 2016 - Add tag info
     ...
     """
-    p = subprocess.Popen(['git','log','-n1','--',filePath],stdout=subprocess.PIPE,stderr=subprocess.PIPE,cwd='/'.join(filePath.split('/')[0:-1]))
+    # Get hash, author, dates and notes    
+    p = subprocess.Popen(['git','log','-n1','--',filePath],
+                         stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                         cwd='/'.join(filePath.split('/')[0:-1]))
     if 'fatal: Not a git repository' in p.stderr.read():
         print 'filePath not a valid git-tracked file'
         return
-    gitTagFull = p.stdout.read() ; # git full tag
-    del(filePath,p)
-    gitTag = []
-    for count,gitStr in enumerate(gitTagFull.split('\n')):
+    gitLogFull = p.stdout.read() ; # git full log
+    del(p)
+    gitLog = []
+    for count,gitStr in enumerate(gitLogFull.split('\n')):
         if gitStr == '':
             pass
         else:
             gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
-            gitTag.extend(["".join(gitStr.strip())])
+            gitLog.extend(["".join(gitStr.strip())])
+    
+    # Get tag info
+    p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
+                          '--pretty="%h %d %s"','--decorate=full',filePath],
+                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+                          cwd='/'.join(filePath.split('/')[0:-1]))
+    gitTag = p.stdout.read() ; # git tag log
+    del(filePath,p)
+    for count,gitStr in enumerate(gitTag.split('\n')):
+        if gitStr == '':
+            pass
+        else:
+            tagInd = gitStr.find('  (tag: refs/tags/')
+            tagTest = re.compile('[0-9].[0-9].[0-9]')
+            tag = gitStr[] ; # start and end match character length
 
-    return gitTag
+    return gitLog
 
 #%%
 def globalAttWrite(file_handle,options):
@@ -1001,7 +1021,7 @@ def writePacked(var,fileObject='tmp.nc'):
         fileObject = cdm.open(fileObject,'w')
     fileObject.write((var-var.add_offset)/var.scale_factor,dtype=np.int16)
     return
-=======
+
 # -*- coding: utf-8 -*-
 """
 Documentation for durolib:
