@@ -30,6 +30,7 @@ Paul J. Durack 27th May 2013
 |  PJD  3 Dec 2015  - Added santerTime function
 |  PJD 25 May 2016  - Removed pytz as standard library import
 |  PJD  7 Jul 2016  - Updated makeCalendar to correct off by 1 error
+|  PJD 25 Aug 2016  - Added 'years' calendarStep argument to makeCalendar
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -498,14 +499,18 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     * PJD 30 Apr 2015 - Fixed 'off by one' error with partial years
     * PJD  7 Jun 2016 - Corrected doc string for calendarStep argument
     * PJD  7 Jul 2016 - Fixed makeCalendar('1854','2016',monthStart='01',monthEnd='06',calendarStep='months') off by one error
+    * PJD 25 Aug 2016 - Added 'years' calendarStep argument
     * TODO: Update to take full date identifier '2001-1-1 0:0:0.0', not just year
     * Issues with the daily calendar creation - likely require tweaks to cdutil.times.setAxisTimeBoundsDaily (range doesn't accept fractions, only ints)
     * Consider reviewing calendar assignment in /work/durack1/Shared/obs_data/AQUARIUS/read_AQ_SSS.py
     """
     # First check inputs
-    if calendarStep not in ['days','months',]:
+    if calendarStep not in ['days','months','years']:
         print '** makeCalendar error: calendarStep unknown, exiting..'
         return
+    if calendarStep == 'years':
+        monthStart = 1
+        monthEnd = 12
     if not isinstance(timeStart,str) or not isinstance(timeEnd,str):
         print '** makeCalendar error: timeStart or timeEnd invalid, exiting..'
         return
@@ -537,15 +542,30 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     # Set units for value conversion
     timeUnitsStr = ''.join([calendarStep,' since ',str(timeStart.year)])
     # Set times
+
+    #print 'timeStart',timeStart
+    #print 'timeEnd',timeEnd
+
     timeStart   = int(timeStart.torelative(timeUnitsStr).value)
     timeEnd     = int(timeEnd.torelative(timeUnitsStr).value)
+
+    #print 'timeStart',timeStart
+    #print 'timeEnd',timeEnd
+    #print timeUnitsStr
+    #print 'timeStart',cdt.r2c(timeStart,timeUnitsStr)
+    #print 'timeEnd',cdt.r2c(timeEnd,timeUnitsStr)
 
     if 'dayStep' in locals() and calendarStep == 'days':
         times = np.float32(range(timeStart,timeEnd,dayStep)) ; # timeEnd/range requires +1 to reach end points (invalid correction 160707)
     else:
-        #times = np.float32(range(timeStart,(timeEnd)))
         times = np.float32(range(timeStart,timeEnd)) ; # timeEnd/range requires +1 to reach end points (invalid correction 160707)
+        
+    #print len(times)
+    
     times                   = cdm.createAxis(times)
+    
+    #print times.shape    
+    
     times.designateTime()
     times.id                = 'time'
     times.units             = timeUnitsStr
@@ -553,11 +573,20 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     times.standard_name     = 'time'
     times.calendar          = 'gregorian'
     times.axis              = 'T'
-    if calendarStep == 'months':
-        cdu.setTimeBoundsMonthly(times)
-    elif calendarStep == 'days':
+
+    #print times.asComponentTime()[0]
+    #print times.asComponentTime()[-1]
+
+    if calendarStep == 'days':
         #cdu.setTimeBoundsDaily(times,frequency=(1./dayStep))
         pass
+    elif calendarStep == 'months':
+        cdu.setTimeBoundsMonthly(times)
+    elif calendarStep == 'years':
+        cdu.setTimeBoundsYearly(times)
+    #print times.asComponentTime()[0]
+    #print times.asComponentTime()[-1]
+    
     times.toRelativeTime(''.join(['days since ',str(times.asComponentTime()[0].year),'-1-1']))
     timeBounds  = times.getBounds()
     times[:]    = (timeBounds[:,0]+timeBounds[:,1])/2.
