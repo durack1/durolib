@@ -300,9 +300,10 @@ def getGitInfo(filePath):
     -------
 
     |  **gitTag[0]** - commit hash
-    |  **gitTag[1]** - commit author
-    |  **gitTag[2]** - commit date and time
-    |  **gitTag[3]** - commit notes
+    |  **gitTag[1]** - commit note
+    |  **gitTag[2]** - commit tag_point (if numeric: x.x.x)
+    |  **gitTag[3]** - commit date and time
+    |  **gitTag[4]** - commit author
 
     Usage:
     ------
@@ -312,7 +313,7 @@ def getGitInfo(filePath):
     Notes:
     -----
     * PJD 26 Aug 2016 - Showing tags, see http://stackoverflow.com/questions/4211604/show-all-tags-in-git-log
-    * PJD 26 Aug 2016 - Add tag info
+    * PJD 26 Aug 2016 - Added tag/release info
     ...
     """
     # Get hash, author, dates and notes    
@@ -330,7 +331,13 @@ def getGitInfo(filePath):
             pass
         else:
             gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
-            gitLog.extend(["".join(gitStr.strip())])
+            gitStr = gitStr.replace('commit ','commit: ')
+            if count < 3:
+                gitStr = gitStr.strip()
+                gitStr = gitStr[:1].lower() + gitStr[1:]
+                gitLog.extend([gitStr])
+                continue
+            gitLog.extend([''.join(['note: ',gitStr.strip()])])
     
     # Get tag info
     p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
@@ -341,11 +348,22 @@ def getGitInfo(filePath):
     del(filePath,p)
     for count,gitStr in enumerate(gitTag.split('\n')):
         if gitStr == '':
-            pass
+            gitLog.extend(['latest_tagPoint: None'])
         else:
             tagInd = gitStr.find('  (tag: refs/tags/')
             tagTest = re.compile('[0-9].[0-9].[0-9]')
-            tag = gitStr[] ; # start and end match character length
+            tagStart = tagInd+18 ; tagEnd = tagStart+5
+            tag = gitStr[tagStart:tagEnd] ; # start and end match character length
+            if tagTest.match(tag):
+                gitLog.extend([''.join(['latest_tagPoint: ',tag])])
+                break
+            else:
+                print 'git tag non numeric (x.x.x)'
+                gitLog.extend(['latest_tagPoint: None (non numeric: x.x.x)'])
+                break
+    
+    # Order list
+    gitLog = [gitLog[0],gitLog[3],gitLog[-1],gitLog[2],gitLog[1]]
 
     return gitLog
 
