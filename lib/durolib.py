@@ -319,10 +319,17 @@ def getGitInfo(filePath):
     * PJD 31 Aug 2016 - Convert tag info to use describe function
     ...
     """
+    # Test current work dir
+    if '.' in filePath.split('/')[-1]:
+        currentWorkingDir = '/'.join(filePath.split('/')[0:-1])
+    else:
+        currentWorkingDir = filePath
     # Get hash, author, dates and notes
+    
     p = subprocess.Popen(['git','log','-n1','--',filePath],
                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                         cwd='/'.join(filePath.split('/')[0:-1]))
+                         cwd=currentWorkingDir)
+    print currentWorkingDir
     if 'fatal: Not a git repository' in p.stderr.read():
         print 'filePath not a valid git-tracked file'
         return
@@ -347,7 +354,7 @@ def getGitInfo(filePath):
     #                      '--pretty="%h %d %s"','--decorate=full',filePath],
     p = subprocess.Popen(['git','describe','--tags',filePath],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-                          cwd='/'.join(filePath.split('/')[0:-1]))
+                          cwd=currentWorkingDir)
     gitTag = p.stdout.read() ; # git tag log
     gitTagErr = p.stderr.read() ; # Catch tag-less error
     del(filePath,p)
