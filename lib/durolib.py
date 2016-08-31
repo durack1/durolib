@@ -34,6 +34,7 @@ Paul J. Durack 27th May 2013
 |  PJD 15 Aug 2016  - Added readJsonCreateDict function
 |  PJD 25 Aug 2016  - Added 'years' calendarStep argument to makeCalendar
 |  PJD 26 Aug 2016  - Add shebang
+|  PJD 31 Aug 2016  - Updated getGitInfo to include tag info
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -315,6 +316,7 @@ def getGitInfo(filePath):
     -----
     * PJD 26 Aug 2016 - Showing tags, see http://stackoverflow.com/questions/4211604/show-all-tags-in-git-log
     * PJD 26 Aug 2016 - Added tag/release info
+    * PJD 31 Aug 2016 - Convert tag info to use describe function
     ...
     """
     # Get hash, author, dates and notes
