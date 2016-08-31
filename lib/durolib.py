@@ -345,20 +345,13 @@ def getGitInfo(filePath):
     # Get tag info
     #p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
     #                      '--pretty="%h %d %s"','--decorate=full',filePath],
-    #                      stdout=subprocess.PIPE,stderr=subprocess.PIPE,
-    #                      cwd='/'.join(filePath.split('/')[0:-1]))
     p = subprocess.Popen(['git','describe','--tags',filePath],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           cwd='/'.join(filePath.split('/')[0:-1]))
     gitTag = p.stdout.read() ; # git tag log
-    print 'gitTag:',gitTag
-    gitTagErr = p.stderr.read()
-    print 'gitTagErr:',gitTagErr
-    print 'filePath:',filePath
-    print 'cwd:','/'.join(filePath.split('/')[0:-1])
+    gitTagErr = p.stderr.read() ; # Catch tag-less error
     del(filePath,p)
     if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
-        print 'gitTagErr'
         gitLog.extend(['latest_tagPoint: None'])
     elif gitTag != '':
         for count,gitStr in enumerate(gitTag.split('\n')):
@@ -371,7 +364,9 @@ def getGitInfo(filePath):
             else:
                 gitLog.extend(['latest_tagPoint: ',tag])
     else:
-        print 'Tag retrieval error'
+        print 'Tag retrieval error, exiting'
+        print 'gitTag:',gitTag,len(gitTag)
+        print 'gitTagErr:',gitTagErr,len(gitTagErr)
         return
 
     # Order list
