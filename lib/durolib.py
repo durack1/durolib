@@ -367,7 +367,7 @@ def getGitInfo(filePath):
         print 'Tag retrieval error, exiting'
         print 'gitTag:',gitTag,len(gitTag)
         print 'gitTagErr:',gitTagErr,len(gitTagErr)
-        return
+        return ''
 
     # Order list
     gitLog = [gitLog[0],gitLog[3],gitLog[-1],gitLog[2],gitLog[1]]
