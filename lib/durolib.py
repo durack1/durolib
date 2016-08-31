@@ -341,27 +341,36 @@ def getGitInfo(filePath):
             gitLog.extend([''.join(['note: ',gitStr.strip()])])
 
     # Get tag info
-    p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
-                          '--pretty="%h %d %s"','--decorate=full',filePath],
+    #p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
+    #                      '--pretty="%h %d %s"','--decorate=full',filePath],
+    #                      stdout=subprocess.PIPE,stderr=subprocess.PIPE,
+    #                      cwd='/'.join(filePath.split('/')[0:-1]))
+    p = subprocess.Popen(['git','describe','--tags',filePath],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           cwd='/'.join(filePath.split('/')[0:-1]))
     gitTag = p.stdout.read() ; # git tag log
+    print 'gitTag:',gitTag
+    gitTagErr = p.stderr.read()
+    print 'gitTagErr:',gitTagErr
+    print 'filePath:',filePath
+    print 'cwd:','/'.join(filePath.split('/')[0:-1])
     del(filePath,p)
-    for count,gitStr in enumerate(gitTag.split('\n')):
-        if gitStr == '':
-            gitLog.extend(['latest_tagPoint: None'])
-        else:
-            tagInd = gitStr.find('  (tag: refs/tags/')
-            tagTest = re.compile('[0-9].[0-9].[0-9]')
-            tagStart = tagInd+18 ; tagEnd = tagStart+5
-            tag = gitStr[tagStart:tagEnd] ; # start and end match character length
-            if tagTest.match(tag):
-                gitLog.extend([''.join(['latest_tagPoint: ',tag])])
-                break
+    if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
+        print 'gitTagErr'
+        gitLog.extend(['latest_tagPoint: None'])
+    elif gitTag != '':
+        for count,gitStr in enumerate(gitTag.split('\n')):
+            tagBits = gitStr.split['-']
+            tag = tagBits[0]
+            if len(tagBits) > 1:
+                tagPastCount = tagBits[1]
+                tagHash = tagBits[2]
+                gitLog.extend(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])
             else:
-                print 'git tag non numeric (x.x.x)'
-                gitLog.extend(['latest_tagPoint: None (non numeric: x.x.x)'])
-                break
+                gitLog.extend(['latest_tagPoint: ',tag])
+    else:
+        print 'Tag retrieval error'
+        return
 
     # Order list
     gitLog = [gitLog[0],gitLog[3],gitLog[-1],gitLog[2],gitLog[1]]
