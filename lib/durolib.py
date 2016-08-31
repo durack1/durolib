@@ -329,7 +329,6 @@ def getGitInfo(filePath):
     p = subprocess.Popen(['git','log','-n1','--',filePath],
                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                          cwd=currentWorkingDir)
-    print currentWorkingDir
     if 'fatal: Not a git repository' in p.stderr.read():
         print 'filePath not a valid git-tracked file'
         return
