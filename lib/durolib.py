@@ -317,15 +317,18 @@ def getGitInfo(filePath):
     * PJD 26 Aug 2016 - Showing tags, see http://stackoverflow.com/questions/4211604/show-all-tags-in-git-log
     * PJD 26 Aug 2016 - Added tag/release info
     * PJD 31 Aug 2016 - Convert tag info to use describe function
+    * PJD  1 Sep 2016 - Upgrade test logic
     ...
     """
     # Test current work dir
-    if '.' in filePath.split('/')[-1]:
-        currentWorkingDir = '/'.join(filePath.split('/')[0:-1])
+    if os.path.isfile(filePath):
+        currentWorkingDir = os.path.split(filePath)[0]
+    elif os.path.isdir(filePath):
+        currentWorkingDir = os.path.split(filePath)[0]
     else:
-        currentWorkingDir = filePath
+        print 'filePath invalid, exiting'
+        return ''
     # Get hash, author, dates and notes
-    
     p = subprocess.Popen(['git','log','-n1','--',filePath],
                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                          cwd=currentWorkingDir)
