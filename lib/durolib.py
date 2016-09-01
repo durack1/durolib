@@ -321,9 +321,7 @@ def getGitInfo(filePath):
     ...
     """
     # Test current work dir
-    if os.path.isfile(filePath):
-        currentWorkingDir = os.path.split(filePath)[0]
-    elif os.path.isdir(filePath):
+    if os.path.isfile(filePath) or os.path.isdir(filePath):
         currentWorkingDir = os.path.split(filePath)[0]
     else:
         print 'filePath invalid, exiting'
