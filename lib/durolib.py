@@ -318,6 +318,7 @@ def getGitInfo(filePath):
     * PJD 26 Aug 2016 - Added tag/release info
     * PJD 31 Aug 2016 - Convert tag info to use describe function
     * PJD  1 Sep 2016 - Upgrade test logic
+    * PJD 15 Nov 2016 - Broadened error case if not a valid git-tracked file
     ...
     """
     # Test current work dir
@@ -330,10 +331,15 @@ def getGitInfo(filePath):
     p = subprocess.Popen(['git','log','-n1','--',filePath],
                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                          cwd=currentWorkingDir)
-    if 'fatal: Not a git repository' in p.stderr.read():
+    stdout = p.stdout.read() ; # Use persistent variables for tests below
+    stderr = p.stderr.read()
+    if stdout == '' and stderr == '':
         print 'filePath not a valid git-tracked file'
         return
-    gitLogFull = p.stdout.read() ; # git full log
+    elif 'fatal: ' in stderr:
+        print 'filePath not a valid git-tracked file'
+        return
+    gitLogFull = stdout ; # git full log
     del(p)
     gitLog = []
     for count,gitStr in enumerate(gitLogFull.split('\n')):
