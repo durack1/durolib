@@ -35,6 +35,7 @@ Paul J. Durack 27th May 2013
 |  PJD 25 Aug 2016  - Added 'years' calendarStep argument to makeCalendar
 |  PJD 26 Aug 2016  - Add shebang
 |  PJD 31 Aug 2016  - Updated getGitInfo to include tag info
+|  PJD 28 Nov 2016  - Updated getGitInfo to deal with tag information
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -319,11 +320,13 @@ def getGitInfo(filePath):
     * PJD 31 Aug 2016 - Convert tag info to use describe function
     * PJD  1 Sep 2016 - Upgrade test logic
     * PJD 15 Nov 2016 - Broadened error case if not a valid git-tracked file
+    * PJD 28 Nov 2016 - Tweaks to get git tags registering
     ...
     """
     # Test current work dir
     if os.path.isfile(filePath) or os.path.isdir(filePath):
         currentWorkingDir = os.path.split(filePath)[0]
+        #os.chdir(currentWorkingDir) ; # Add convert to local dir
     else:
         print 'filePath invalid, exiting'
         return ''
@@ -358,22 +361,25 @@ def getGitInfo(filePath):
     # Get tag info
     #p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
     #                      '--pretty="%h %d %s"','--decorate=full',filePath],
-    p = subprocess.Popen(['git','describe','--tags',filePath],
+    p = subprocess.Popen(['git','describe','--tags'],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           cwd=currentWorkingDir)
     gitTag = p.stdout.read() ; # git tag log
+    #print 'gitTag',gitTag
     gitTagErr = p.stderr.read() ; # Catch tag-less error
+    #print 'gitTagErr',gitTagErr
     del(filePath,p)
     if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
         gitLog.extend(['latest_tagPoint: None'])
     elif gitTag != '':
         for count,gitStr in enumerate(gitTag.split('\n')):
-            tagBits = gitStr.split['-']
+            #print 'count,gitStr',count,gitStr
+            tagBits = gitStr.split('-')
             tag = tagBits[0]
             if len(tagBits) > 1:
                 tagPastCount = tagBits[1]
                 tagHash = tagBits[2]
-                gitLog.extend(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
             else:
                 gitLog.extend(['latest_tagPoint: ',tag])
     else:
@@ -383,7 +389,7 @@ def getGitInfo(filePath):
         return ''
 
     # Order list
-    gitLog = [gitLog[0],gitLog[3],gitLog[-1],gitLog[2],gitLog[1]]
+    gitLog = [gitLog[0],gitLog[3],gitLog[4],gitLog[2],gitLog[1]]
 
     return gitLog
 
