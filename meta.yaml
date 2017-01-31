@@ -1,24 +1,25 @@
 package:
     name: durolib
-    version: 1.0
+    version: 1.0.1
 
 source:
-    git_rev: master
+    git_rev: 1.0.1
     git_url: git://github.com/durack1/durolib.git
 
 build:
   number: 0
-  noarch_python: True
+  noarch: True
+#  noarch_python: True
 
 requirements:
   build:
-    - python
+    - python >=2.7.13,<3
     - setuptools
   run:
-    - python
-    - cdms2
+    - python >=2.7.13,<3
+    - cdms2 >=2.8
     - cdutil
     - pytz
+    - seawater
 about:
     home:  http://github.com/durack1/durolib
-
