@@ -1,0 +1,16 @@
+160712 1528
+
+# Notes for building and uploading to conda
+> cd /export/durack1/git
+> conda build durolib
+# Blurb from conda
+> anaconda upload /export/durack1/anaconda2/conda-bld/noarch/durolib-1.0-py_0.tar.bz2
+
+170131 1443
+
+# Notes for building and uploading to conda
+# Update meta.yaml and setup.py
+> conda build purge
+> conda build durolib -c conda-forge
+# Blurb from conda
+> anaconda upload /Users/durack1/anaconda2/conda-bld/noarch/durolib-1.0.1-0.tar.bz2
