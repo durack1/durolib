@@ -1,9 +1,9 @@
 package:
     name: durolib
-    version: 1.0.1
+    version: 1.0.2
 
 source:
-    git_rev: 1.0.1
+    git_rev: 1.0.2
     git_url: git://github.com/durack1/durolib.git
 
 build:

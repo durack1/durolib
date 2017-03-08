@@ -1,5 +1,5 @@
 from distutils.core import setup
-Version="1.0.1"
+Version="1.0.2"
 setup (name = "durolib",
        author="Paul J. Durack (durack1@llnl.gov)",
        version=Version,
