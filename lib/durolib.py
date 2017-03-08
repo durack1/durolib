@@ -36,6 +36,7 @@ Paul J. Durack 27th May 2013
 |  PJD 26 Aug 2016  - Add shebang
 |  PJD 31 Aug 2016  - Updated getGitInfo to include tag info
 |  PJD 28 Nov 2016  - Updated getGitInfo to deal with tag information
+|  PJD  8 Mar 2017  - Updated globalAttWrite to deal with UV-CDAT version tags
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -442,18 +443,25 @@ def globalAttWrite(file_handle,options):
     local_time_now              = time_now.replace(tzinfo = local)
     utc_time_now                = local_time_now.astimezone(pytz.utc)
     time_format                 = utc_time_now.strftime("%d-%m-%Y %H:%M:%S %p")
+    cdatVerInfo                 = cdat_info.version() ; # Deal with quirky formats
+    if len(cdatVerInfo) > 2:
+        cdatVerInfo = ".".join(["%s" % el for el in cdat_info.version()])
+    else:
+        cdatVerInfo = cdat_info.version()[-1].strip('v') ; # Trim off the v
+
     if 'options' in locals() and not options == None:
         if options.lower() == 'noid':
             file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-            file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
+            file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
                                                    '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         else:
             print '** Invalid options passed, skipping global attribute write.. **'
     else:
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
         file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
-                                           '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+
+        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
+                                               '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
 
 #%%
