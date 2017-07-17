@@ -322,6 +322,7 @@ def getGitInfo(filePath):
     * PJD  1 Sep 2016 - Upgrade test logic
     * PJD 15 Nov 2016 - Broadened error case if not a valid git-tracked file
     * PJD 28 Nov 2016 - Tweaks to get git tags registering
+    * PJD 17 Jul 2017 - Further work required to deal with tags which include '-' characters
     ...
     """
     # Test current work dir
@@ -373,13 +374,34 @@ def getGitInfo(filePath):
     if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
         gitLog.extend(['latest_tagPoint: None'])
     elif gitTag != '':
+        # Example gitTag='CMOR-3.2.5\n' https://github.com/WCRP-CMIP/CMIP6_CVs/releases/tag/CMOR-3.2.5
+        # Example gitTag='CMOR-3.2.5-42-gb07f789\n'
         for count,gitStr in enumerate(gitTag.split('\n')):
             #print 'count,gitStr',count,gitStr
+            if gitStr == '':
+                continue
+            #hyphInds = []; ind = 0
+            #while ind < len(gitStr):
+            #    hyphInds.append(gitStr.rfind('-',ind))
+            #    ind = gitStr.find('-',ind)
             tagBits = gitStr.split('-')
-            tag = tagBits[0]
-            if len(tagBits) > 1:
+            #print tagBits
+            tag = tagBits[0] ; # Doesn't work with 'CMOR-3.2.5\n'
+            #print tag,len(tag)
+            if gitTag.count('-') == 1: # Case tag point e.g. 'CMOR-3.2.5\n'
+                tagPastCount = '0'
+                tagHash = gitLog[0].replace('commit: ','')[0:7]
+                tag = gitTag.strip('\n')
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
+            elif gitTag.count('-') == 2: # Case beyond tag point
                 tagPastCount = tagBits[1]
                 tagHash = tagBits[2]
+                tag = tagBits[0]
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
+            elif gitTag.count('-') == 3: # Case beyond tag point
+                tagPastCount = tagBits[2]
+                tagHash = tagBits[3]
+                tag = gitTag.split('\n')[0]
                 gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
             else:
                 gitLog.extend(['latest_tagPoint: ',tag])
