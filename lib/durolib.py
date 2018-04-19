@@ -37,6 +37,7 @@ Paul J. Durack 27th May 2013
 |  PJD 31 Aug 2016  - Updated getGitInfo to include tag info
 |  PJD 28 Nov 2016  - Updated getGitInfo to deal with tag information
 |  PJD  8 Mar 2017  - Updated globalAttWrite to deal with UV-CDAT version tags
+|  PJD 19 Apr 2018  - Corrected UTC offset, now correct times are reported - https://github.com/durack1/durolib/issues/20 & stub42/pytz/issues/12
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -456,16 +457,16 @@ def globalAttWrite(file_handle,options):
 
     Notes:
     -----
-    ...
+    * PJD 19 Apr 2018 - Corrected UTC offset, now correct times are reported - https://github.com/stub42/pytz/issues/12
     """
     import cdat_info,pytz
-    # Create timestamp, corrected to UTC for history
-    local                       = pytz.timezone("America/Los_Angeles")
-    time_now                    = datetime.datetime.now();
-    local_time_now              = time_now.replace(tzinfo = local)
-    utc_time_now                = local_time_now.astimezone(pytz.utc)
-    time_format                 = utc_time_now.strftime("%d-%m-%Y %H:%M:%S %p")
-    cdatVerInfo                 = cdat_info.version() ; # Deal with quirky formats
+    # Create timestamp, using UTC for history
+    utcNow      = datetime.datetime.utcnow();
+    utcNow      = utcNow.replace(tzinfo=pytz.utc)
+    timeFormat  = utcNow.strftime("%d-%m-%Y %H:%M:%S %p")
+    localTz     = pytz.timezone("America/Los_Angeles")
+    localNow    = utcNow.astimezone(localTz)
+    cdatVerInfo = cdat_info.version() ; # Deal with quirky formats
     if len(cdatVerInfo) > 2:
         cdatVerInfo = ".".join(["%s" % el for el in cdat_info.version()])
     else:
@@ -473,14 +474,14 @@ def globalAttWrite(file_handle,options):
 
     if 'options' in locals() and not options == None:
         if options.lower() == 'noid':
-            file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-            file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
+            file_handle.history = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
+            file_handle.host    = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
                                                    '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         else:
             print '** Invalid options passed, skipping global attribute write.. **'
     else:
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
-        file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
+        file_handle.history         = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
 
         file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
                                                '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
