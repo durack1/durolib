@@ -38,6 +38,7 @@ Paul J. Durack 27th May 2013
 |  PJD 28 Nov 2016  - Updated getGitInfo to deal with tag information
 |  PJD  8 Mar 2017  - Updated globalAttWrite to deal with UV-CDAT version tags
 |  PJD 19 Apr 2018  - Corrected UTC offset, now correct times are reported - https://github.com/durack1/durolib/issues/20 & stub42/pytz/issues/12
+|  PJD 18 Jun 2018  - Added cmipBranchTime function https://github.com/durack1/durolib/issues/6
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -81,6 +82,58 @@ except:
     print '* cdat_info not available, skipping UV-CDAT import *'
 
 ## Define useful functions ##
+ #%%
+def cmipBranchTime(model,experiment,r1i1p1):
+    """
+    Documentation for cmipBranchTime():
+    -------
+    The cmipBranchTime() function returns simulation branch information for
+    models that contributed to the CMIP5 historical experiment
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Usage:
+    ------
+        >>> from durolib import cmipBranchTime
+        >>> branchTime = cmipBranchTime('ACCESS1-0','historical,'r1i1p1')
+
+    Notes:
+    -----
+    - PJD 18 Jun 2018 - Implemented following existing historical database
+    - Currently only contains CMIP5 historical simulation branch information
+    """
+    # Load dictionary into memory
+    cmip5 = json.load(open('CMIP5BranchTimes.json','r'))
+    # Validate user input
+    cm5Models = ['model','ACCESS1-0','ACCESS1-3','BNU-ESM','CCSM4','CESM1-BGC',
+                 'CESM1-CAM5','CESM1-CAM5-1-FV2','CESM1-FASTCHEM','CESM1-WACCM',
+                 'CMCC-CESM','CMCC-CM','CMCC-CMS','CNRM-CM5','CSIRO-Mk3-6-0',
+                 'CanESM2','EC-EARTH','FGOALS-g2','FGOALS-s2','FIO-ESM','GFDL-CM3',
+                 'GFDL-ESM2M','GISS-E2-H-CC','GISS-E2-H','GISS-E2-R-CC','GISS-E2-R',
+                 'HadGEM2-AO','HadGEM2-CC','HadGEM2-ES','IPSL-CM5A-LR','IPSL-CM5A-MR',
+                 'IPSL-CM5B-LR','MIROC-ESM-CHEM','MIROC-ESM','MIROC4h','MIROC5',
+                 'MPI-ESM-LR','MPI-ESM-MR','MPI-ESM-P','MRI-CGCM3','NorESM1-M',
+                 'NorESM1-ME','bcc-csm1-1-m','bcc-csm1-1','inmcm4']
+    cm5Experiments = ['historical','historicalNat']
+    if model not in cm5Models:
+        print ''.join(['Model: ',model,' not a valid CMIP5 contributor'])
+        return None
+    elif experiment not in cm5Experiments:
+        print ''.join(['Experiment: ',experiment,' not currently indexed'])
+        return None
+    else:
+        experiment = 'historical'
+        branchInfo = cmip5.get('ACCESS1-0').get('historical')
+        if r1i1p1 not in branchInfo.keys():
+            print ''.join(['r1i1p1: ',r1i1p1,' not a valid ',model,' ',experiment,' simulation'])
+            return None
+        else:
+            print ''.join(['Model: ',model,'; Exp: ',experiment,'; r1i1p1: ',r1i1p1,
+                           ' branch times found'])
+            branchInfoDict = branchInfo
+
+    return branchInfoDict
+
 #%%
 def clearAll():
     """
