@@ -1,13 +1,13 @@
 package:
     name: durolib
-    version: 1.0.2
+    version: 1.1.0
 
 source:
-    git_rev: 1.0.2
+    git_rev: 1.1.0
     git_url: git://github.com/durack1/durolib.git
 
 build:
-  number: 0
+  number: 1
   noarch: True
 #  noarch_python: True
 
