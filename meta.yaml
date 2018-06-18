@@ -13,13 +13,14 @@ build:
 
 requirements:
   build:
-    - python >=2.7.13,<3
-    - setuptools
+    - python >=2.7.14,<3
+    - setuptools >=39.2.0
   run:
-    - python >=2.7.13,<3
-    - cdms2 >=2.8
-    - cdutil
-    - pytz
-    - seawater
+    - python >=2.7.14,<3
+    - cdms2 >=3.0
+    - cdutil >=8.0
+    - pytz >=2018.4
+    - scipy >=1.1.0
+    - seawater >=3.3.4
 about:
     home:  http://github.com/durack1/durolib
