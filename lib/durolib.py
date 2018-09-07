@@ -39,6 +39,7 @@ Paul J. Durack 27th May 2013
 |  PJD  8 Mar 2017  - Updated globalAttWrite to deal with UV-CDAT version tags
 |  PJD 19 Apr 2018  - Corrected UTC offset, now correct times are reported - https://github.com/durack1/durolib/issues/20 & stub42/pytz/issues/12
 |  PJD 18 Jun 2018  - Added cmipBranchTime function https://github.com/durack1/durolib/issues/6
+|  PJD  6 Sep 2018  - Corrected fixInterpAxis time units
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -273,12 +274,13 @@ def fixInterpAxis(var):
         >>> (slope),(slope_err) = linearregression(fixInterpAxis(var),error=1,nointercept=1)
 
     Notes:
+    - PJD  6 Sep 2018 - Corrected time units 0-1-1 to 1-1-1
     -----
         ...
     """
     tind = range(shape(var)[0]) ; # Assume time axis is dimension 0
     t = cdm.createAxis(tind,id='time')
-    t.units = 'years since 0-01-01 0:0:0.0'
+    t.units = 'years since 1-01-01 0:0:0.0'
     t.calendar = var.getTime().calendar
     cdu.times.setTimeBoundsYearly(t) ; # Explicitly set time bounds to yearly
     var.setAxis(0,t)
