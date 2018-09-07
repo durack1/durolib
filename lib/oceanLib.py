@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
-import gc,os,pdb#,sys
+import gc,os,pdb #,sys
 import cdms2 as cdm
 import cdutil as cdu
 import MV2 as mv
 import numpy as np
 np.seterr(all='ignore') ; # Cautious use of this turning all error reporting off - shouldn't be an issue as using masked arrays
-import seawater as sw ; # was seawater.csiro
+import seawater as sw ; # was seawater.csiro - 180730 installed python-seawater into cdat80py2 (ocean)
 from durolib import getGitInfo,globalAttWrite,scrubNaNAndMask
 from numpy import array,tile,shape,transpose ; #mod
 from scipy import interpolate
@@ -28,10 +28,10 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     """
     The makeSteric() function takes 3D (not temporal) arguments and creates
     heat content and steric fields which are written to a specified outfile
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov : @durack1.
     Created on Thu Jul 18 13:03:37 2013.
-    
+
     Inputs:
     ------
     - salinity(lev,lat,lon) - 3D array for the climatological period.
@@ -41,15 +41,15 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     - outFileName(str) - output filename with full path specified.
     - thetao(bool) - boolean value specifying either in-situ or potential temperature arrays provided.
     - pressure(bool) - boolean value specifying whether lev-coordinate is pressure (dbar) or depth (m).
-    
+
     Usage:
     ------
         >>> from makeStericLib import makeSteric
         >>> makeSteric(salinity,salinityChg,thetao,thetaoChg,'outfile.nc',True,False)
-    
+
     Notes:
     -----
-    - PJD 18 Jul 2013 - Validated Ishii v6.13 data against WOA94 - checks out ok. Units: dyn decimeter compared to http://www.nodc.noaa.gov/OC5/WOA94/dyn.html uses cm (not decimeter; x 10) 
+    - PJD 18 Jul 2013 - Validated Ishii v6.13 data against WOA94 - checks out ok. Units: dyn decimeter compared to http://www.nodc.noaa.gov/OC5/WOA94/dyn.html uses cm (not decimeter; x 10)
     - PJD 18 Jul 2013 - Added attribute scrub to incoming variables (so,so_chg,temp,temp_chg) to maintain output consistency
     - PJD 22 Jul 2013 - Added name attributes to so and temp variables, added units to so_chg
     - PJD 22 Jul 2013 - removed duplicated code by converting repetition to function scrubNaNAndMask
@@ -91,7 +91,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     for count,x in enumerate(temp_chg.attributes.keys()):
         delattr(temp_chg,x)
     del(count,x)
-    
+
     # Create z-coordinate from salinity input
     if not pressure:
         z_coord                         = so.getAxis(0)
@@ -103,7 +103,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     else:
         pressure_levels                 = so.getAxis(0)
         pressure_levels                 = transpose(tile(pressure_levels,(so.shape[2],so.shape[1],1)))
-    
+
     pressure_levels                 = cdm.createVariable(pressure_levels,id='pressure_levels')
     pressure_levels.setAxis(0,so.getAxis(0))
     pressure_levels.setAxis(1,so.getAxis(1))
@@ -115,7 +115,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     pressure_levels.standard_name   = 'sea_water_pressure'
     pressure_levels.units           = 'decibar'
     pressure_levels.axis            = 'Z'
-    
+
     # Cleanup depth axis attributes
     depth               = so.getAxis(0)
     depth.id            = 'depth'
@@ -128,7 +128,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     temp.setAxis(0,depth)
     temp_chg.setAxis(0,depth)
     del(depth)
-    
+
     # Convert using python-seawater library (v3.3.1 - 130807)
     if thetao:
         # Process potential temperature to in-situ - default conversion sets reference pressure to 0 (surface)
@@ -138,31 +138,31 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
         #temp                    = sw.ptmp(np.array(so),np.array(temp),np.array(pressure_levels),np.array(pressure_levels)); # units degrees C
         temp_chg                = np.array(temp_chg); # units degrees C
         temp                    = np.array(temp); # units degrees C
-    
+
     # Climatologies - rho,cp,steric_height
     rho                         = sw.dens(np.array(so),np.array(temp),np.array(pressure_levels)) ; # units kg m-3
     cp                          = sw.cp(np.array(so),np.array(temp),np.array(pressure_levels)) ; # units J kg-1 C-1
     steric_height               = sw.gpan(np.array(so),np.array(temp),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
-    
+
     # Halosteric - rho,cp
     ss                          = map(array,(so+so_chg))
     rho_halo                    = sw.dens(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units kg m-3
     cp_halo                     = sw.cp(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units J kg-1 C-1
     tmp                         = sw.gpan(np.array(ss),np.array(temp),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
     steric_height_halo_anom2    = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
-    
+
     # Full steric - steric_height
     tt                          = map(array,(temp+temp_chg))
     tmp                         = sw.gpan(np.array(ss),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
     steric_height_anom          = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
     del(ss,tmp) ; gc.collect()
-    
+
     # Thermosteric - rho,cp,steric_height
-    rho_thermo                  = sw.dens(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units kg m-3 
+    rho_thermo                  = sw.dens(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units kg m-3
     cp_thermo                   = sw.cp(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units J kg-1 C-1
     tmp                         = sw.gpan(np.array(so),np.array(tt),np.array(pressure_levels)) ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
     steric_height_thermo_anom   = tmp-steric_height ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
-    del(tt,tmp) ; gc.collect()    
+    del(tt,tmp) ; gc.collect()
 
     # Halosteric - steric_height
     steric_height_halo_anom     = steric_height_anom-steric_height_thermo_anom ; # units m3 kg-1 Pa == m2 s-2 == J kg-1 (dynamic decimeter)
@@ -173,7 +173,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_tanom          = np.array(temp_chg)*np.array(rho)*np.array(cp) ; # units J
     #heat_content_tanom          = np.array(temp_chg)*np.array(1020)*np.array(4187) ; # units J - try hard-coded - AR5 numbers
     heat_content_tsanom         = np.array(temp_chg)*np.array(rho_halo)*np.array(cp_halo) ; # units J
-    
+
     # Correct all instances of NaN values and fix masks - applied before cdms variables are created otherwise names/ids/attributes are reset
     temp                        = scrubNaNAndMask(temp,so)
     temp_chg                    = scrubNaNAndMask(temp_chg,so)
@@ -192,7 +192,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_sanom          = scrubNaNAndMask(heat_content_sanom,so)
     heat_content_tanom          = scrubNaNAndMask(heat_content_tanom,so)
     heat_content_tsanom         = scrubNaNAndMask(heat_content_tsanom,so)
-    
+
     # Recreate and redress variables
     so.id                           = 'so_mean'
     so.units                        = '1e-3'
@@ -206,8 +206,8 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     temp_chg                        = cdm.createVariable(temp_chg,id='temp_chg')
     temp_chg.setAxis(0,so.getAxis(0))
     temp_chg.setAxis(1,so.getAxis(1))
-    temp_chg.setAxis(2,so.getAxis(2))   
-    temp_chg.units                  = 'degrees_C'    
+    temp_chg.setAxis(2,so.getAxis(2))
+    temp_chg.units                  = 'degrees_C'
     rho                             = cdm.createVariable(rho,id='rho')
     rho.setAxis(0,so.getAxis(0))
     rho.setAxis(1,so.getAxis(1))
@@ -289,14 +289,14 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_tsanom.setAxis(1,so.getAxis(1))
     heat_content_tsanom.setAxis(2,so.getAxis(2))
     heat_content_tsanom.units       = 'J'
-    
+
     # Create model-based depth index for subset target levels
     newdepth = np.array([5,10,20,30,40,50,75,100,125,150,200,300,500,700,1000,1500,1800,2000]).astype('f');
     newdepth_bounds = np.array([[0,5],[5,10],[10,20],[20,30],[30,40],[40,50],[50,75],[75,100],[100,125],[125,150],
     [150,200],[200,300],[300,500],[500,700],[700,1000],[1000,1500],[1500,1800],[1800,2000]]).astype('f')
     #newdepth = np.array([200,300,500,700,1000,1500,1800,2000]).astype('f');
     #newdepth_bounds = np.array([[0,200],[200,300],[300,500],[500,700],[700,1000],[1000,1500],[1500,1800],[1800,2000]]).astype('f')
-    
+
     # Interpolate to depths
     so_depthInterp                          = cdu.linearInterpolation(so,pressure_levels,levels=newdepth)
     temp_depthInterp                        = cdu.linearInterpolation(temp,pressure_levels,levels=newdepth)
@@ -308,7 +308,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_sanom_depthInterp          = cdu.linearInterpolation(heat_content_sanom,pressure_levels,levels=newdepth)
     heat_content_tanom_depthInterp          = cdu.linearInterpolation(heat_content_tanom,pressure_levels,levels=newdepth)
     heat_content_tsanom_depthInterp         = cdu.linearInterpolation(heat_content_tanom,pressure_levels,levels=newdepth)
-    
+
     # Fix masks - applied before cdms variables are created otherwise names/ids/attributes are reset
     temp_depthInterp                        = scrubNaNAndMask(temp_depthInterp,so_depthInterp)
     steric_height_depthInterp               = scrubNaNAndMask(steric_height_depthInterp,so_depthInterp)
@@ -319,7 +319,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_sanom_depthInterp          = scrubNaNAndMask(heat_content_sanom_depthInterp,so_depthInterp)
     heat_content_tanom_depthInterp          = scrubNaNAndMask(heat_content_tanom_depthInterp,so_depthInterp)
     heat_content_tsanom_depthInterp         = scrubNaNAndMask(heat_content_tsanom_depthInterp,so_depthInterp)
-    
+
     # Fix bounds
     newdepth = so_depthInterp.getAxis(0)
     newdepth.setBounds(newdepth_bounds)
@@ -331,7 +331,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     newdepth.standard_name  = 'sea_water_pressure'
     newdepth.units          = 'decibar'
     newdepth.axis           = 'Z'
-    
+
     # Assign corrected bounds
     so_depthInterp.setAxis(0,newdepth)
     temp_depthInterp.setAxis(0,newdepth)
@@ -343,7 +343,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_sanom_depthInterp.setAxis(0,newdepth)
     heat_content_tanom_depthInterp.setAxis(0,newdepth)
     heat_content_tsanom_depthInterp.setAxis(0,newdepth)
-    
+
     # Average/integrate to surface - configure bounds
     # Preallocate arrays
     so_depthAve                     = np.ma.zeros([len(newdepth),shape(so)[1],shape(so)[2]])
@@ -363,7 +363,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
         tmp = cdu.averager(heat_content_tsanom_depthInterp[0:(count+1),...],axis=0,weights='weighted',action='sum')
         heat_content_tsanom_depthInteg[count,]  = tmp
     del(heat_content_tanom_depthInterp,heat_content_tsanom_depthInterp); gc.collect()
-    
+
     # Fix masks - applied before cdms variables are created otherwise names/ids/attributes are reset
     so_depthAve = scrubNaNAndMask(so_depthAve,so_depthInterp)
     temp_depthAve = scrubNaNAndMask(temp_depthAve,so_depthInterp)
@@ -371,7 +371,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     heat_content_tanom_depthInteg = scrubNaNAndMask(heat_content_tanom_depthInteg,so_depthInterp)
     heat_content_tsanom_depthInteg = scrubNaNAndMask(heat_content_tsanom_depthInteg,so_depthInterp)
     del(so_depthInterp)
-    
+
     # Convert numpy arrays to cdms objects
     heat_content_sanom_depthInteg               = cdm.createVariable(heat_content_sanom_depthInteg,id='heat_content_sanom_depthInteg')
     heat_content_sanom_depthInteg.id            = 'heat_content_sanom_depthInteg'
@@ -430,8 +430,8 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     steric_height_halo_anom2_depthInterp.units   = 'm^3 kg^-1 Pa (dynamic decimeter)'
     # Cleanup workspace
     del(newdepth) ; gc.collect()
-    
-    
+
+
     # Write variables to file
     if os.path.isfile(outFileName):
         os.remove(outFileName)
@@ -454,7 +454,7 @@ def makeSteric(salinity,salinityChg,temp,tempChg,outFileName,thetao,pressure):
     # Derived variables
     filehandle.write(cp.astype('float32'))
     filehandle.write(cp_halo.astype('float32'))
-    filehandle.write(cp_thermo.astype('float32'))    
+    filehandle.write(cp_thermo.astype('float32'))
     filehandle.write(rho.astype('float32'))
     filehandle.write(rho_halo.astype('float32'))
     filehandle.write(rho_thermo.astype('float32'))
@@ -548,10 +548,10 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     The makeHeatContent() function takes 3D (not temporal) arguments and creates
     heat content which is then mapped to a destination grid and written to a
     specified variable
-    
+
     Author: Paul J. Durack : pauldurack@llnl.gov : @durack1.
     Created on Tue Nov 24 15:34:30 2015.
-    
+
     Inputs:
     ------
     - salt(lev,lat,lon) - 3D array.
@@ -559,17 +559,17 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     - destGridArray(str) - 2D array with valid grid and mask.
     - thetao(bool) - boolean value specifying either in-situ or potential temperature arrays provided.
     - pressure(bool) - boolean value specifying whether lev-coordinate is pressure (dbar) or depth (m).
-    
+
     Usage:
     ------
         >>> from oceanLib import makeHeatContent
         >>> makeHeatContent(salt,temp,destGridArray,thetao=True,pressure=False)
-    
+
     Notes:
     -----
     - PJD 24 Nov 2015 - Migrated into new oceanLib from heatContentLib
     - TODO: Better deal with insitu vs thetao variables
-    - TODO: 
+    - TODO:
     """
 
     # Remap variables to short names
@@ -581,13 +581,13 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #print mask.getAxisIds()
     del(salt,temp,destMask) ; gc.collect()
     depthInd = 0 ; # Set depth coordinate index
-    
+
     #print 's:    ',s.min(),s.max()
     #print 't:    ',t.min(),t.max()
 
     # Fix out of bounds values
-    t = mv.where(t<-2.6,-2.6,t) ; # Fix for NaN values    
-    
+    t = mv.where(t<-2.6,-2.6,t) ; # Fix for NaN values
+
     # Calculate pressure - inputs depth & lat
     # Create z-coordinate from salinity input
     if not pressure:
@@ -611,7 +611,7 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     pressureLevels.standard_name   = 'sea_water_pressure'
     pressureLevels.units           = 'decibar'
     pressureLevels.axis            = 'Z'
-    
+
     #print 'pres: ',pressureLevels.min(),pressureLevels.max()
     #print pressureLevels.shape
     #print s.shape
@@ -629,16 +629,16 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     temp            = scrubNaNAndMask(temp,s)
     rho             = scrubNaNAndMask(rho,s)
     cp              = scrubNaNAndMask(cp,s)
-    
-    #print 'temp: ',temp.min(),temp.max()    
+
+    #print 'temp: ',temp.min(),temp.max()
     #print 'rho:  ',rho.min(),rho.max()
     #print 'cp:   ',cp.min(),cp.max()
-    
+
     # Calculate heatContent - inputs temp,rho,cp
     heatContent     = np.array(temp)*np.array(rho)*np.array(cp) ; # units J
-    
+
     # Correct instances of NaN values and fix masks - applied before cdms variables are created otherwise names/ids/attributes are reset
-    heatContent     = scrubNaNAndMask(heatContent,s)    
+    heatContent     = scrubNaNAndMask(heatContent,s)
     #print 'hc:   ',heatContent.min(),heatContent.max()
 
     # Interpolate to standard levels - inputs heatContent,levels
@@ -650,14 +650,14 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #print heatContent.getAxisIds()
     #print pressureLevels.shape
     #print pressureLevels.getAxisIds()
-    
+
     # Reset variable axes
     heatContent.setAxis(0,s.getAxis(0))
     #heatContent.setAxis(1,s.getAxis(1))
     #heatContent.setAxis(2,s.getAxis(2))
 
     pdb.set_trace()
-    
+
     heatContent.setGrid(s.getGrid())
 
 
@@ -665,7 +665,7 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #print heatContent.getAxisIds()
     #print pressureLevels.shape
     #print pressureLevels.getAxisIds()
-    
+
     heatContent_depthInterp     = cdu.linearInterpolation(heatContent,pressureLevels,levels=newDepth)
     # Fix bounds
     newDepth = heatContent_depthInterp.getAxis(0)
@@ -678,23 +678,23 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     newDepth.standard_name  = 'sea_water_pressure'
     newDepth.units          = 'decibar'
     newDepth.axis           = 'Z'
-    
+
     #print 'hc_interp:',heatContent_depthInterp.min(),heatContent_depthInterp.max()
 
     # Integrate to 700 dbar - inputs heatContent
 
     heatContent_depthInteg = cdu.averager(heatContent_depthInterp[0:14,...],axis=0,weights='weighted',action='sum')(squeeze=1) # Calculate depth-weighted-integrated thetao
     # Assign all axis info
-    
+
     #print heatContent_depthInteg.shape
     pdb.set_trace()
     # Interpolate in x,y - inputs heatContent
     #tmp1 = heatContent_depthInteg.regrid(mask.getGrid(),regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
     tmp1 = heatContent_depthInteg.regrid(mask,regridTool='esmf',regridMethod='linear') ; # Use defaults - ,coordSys='deg',diag = {},periodicity=1)
     #print tmp1.shape
-    
+
     tmp1 = mv.where(tmp1<0,0,tmp1) ; # Fix for negative values
-    
+
     # Infill - inputs heatContent
     # Create inputs for interpolation
     points = np.zeros([(mask.shape[0]*mask.shape[1]),2]) ; # Create 25380 vectors of lon/lat
@@ -716,15 +716,15 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     #maskFilled  = mask(tmp,points,valid)
     interpolant = interpolate.LinearNDInterpolator(points[valid,:],np.array(tmp1.flatten())[valid]) ; # Create interpolant
     maskFill    = interpolant(points[:,0].squeeze(),points[:,1].squeeze()) ; # Use interpolant to create filled matrix
-    maskFill    = np.reshape(maskFill,mask.shape) ; # Resize to original dimensions    
-    
+    maskFill    = np.reshape(maskFill,mask.shape) ; # Resize to original dimensions
+
     # Fix issues with interpolant
     tmp2 = mv.where(np.isnan(maskFill),1e+20,maskFill) ; # Fix for NaN values
     tmp2 = mv.where(tmp2>tmp1.max(),0,tmp2) ; # Fix for max values
     tmp2 = mv.where(tmp2<tmp1.min(),0,tmp2) ; # Fix for min values
     tmp = mv.masked_where(mask.mask,tmp2)
     #print tmp.shape
-        
+
     # Redress variable
     heatContent                 = cdm.createVariable([tmp],id='heatContent')
     depthInt                    = cdm.createAxis([350],id='depth')
@@ -742,11 +742,11 @@ def makeHeatContent(salt,temp,destMask,thetao,pressure):
     heatContent.long_name       = 'sea_water_heat_content'
     heatContent.standard_name   = 'sea_water_heat_content'
     heatContent.units           = 'J'
-    
+
     return heatContent ; #,tmp1 ; # 0-700 dbar standard masked variable
 
 #%%
 def maskFill(mask,points,index):
     interpolant = interpolate.LinearNDInterpolator(points[index,:],np.array(mask.flatten())[index]) ; # Create interpolant
-    maskFilled = interpolant(points[:,0].squeeze(),points[:,1].squeeze()) ; # Use interpolant to create filled matrix    
+    maskFilled = interpolant(points[:,0].squeeze(),points[:,1].squeeze()) ; # Use interpolant to create filled matrix
     return maskFilled

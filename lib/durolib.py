@@ -35,6 +35,11 @@ Paul J. Durack 27th May 2013
 |  PJD 25 Aug 2016  - Added 'years' calendarStep argument to makeCalendar
 |  PJD 26 Aug 2016  - Add shebang
 |  PJD 31 Aug 2016  - Updated getGitInfo to include tag info
+|  PJD 28 Nov 2016  - Updated getGitInfo to deal with tag information
+|  PJD  8 Mar 2017  - Updated globalAttWrite to deal with UV-CDAT version tags
+|  PJD 19 Apr 2018  - Corrected UTC offset, now correct times are reported - https://github.com/durack1/durolib/issues/20 & stub42/pytz/issues/12
+|  PJD 18 Jun 2018  - Added cmipBranchTime function https://github.com/durack1/durolib/issues/6
+|  PJD  6 Sep 2018  - Corrected fixInterpAxis time units
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -78,6 +83,58 @@ except:
     print '* cdat_info not available, skipping UV-CDAT import *'
 
 ## Define useful functions ##
+ #%%
+def cmipBranchTime(model,experiment,r1i1p1):
+    """
+    Documentation for cmipBranchTime():
+    -------
+    The cmipBranchTime() function returns simulation branch information for
+    models that contributed to the CMIP5 historical experiment
+
+    Author: Paul J. Durack : pauldurack@llnl.gov
+
+    Usage:
+    ------
+        >>> from durolib import cmipBranchTime
+        >>> branchTime = cmipBranchTime('ACCESS1-0','historical,'r1i1p1')
+
+    Notes:
+    -----
+    - PJD 18 Jun 2018 - Implemented following existing historical database
+    - Currently only contains CMIP5 historical simulation branch information
+    """
+    # Load dictionary into memory
+    cmip5 = json.load(open('CMIP5BranchTimes.json','r'))
+    # Validate user input
+    cm5Models = ['model','ACCESS1-0','ACCESS1-3','BNU-ESM','CCSM4','CESM1-BGC',
+                 'CESM1-CAM5','CESM1-CAM5-1-FV2','CESM1-FASTCHEM','CESM1-WACCM',
+                 'CMCC-CESM','CMCC-CM','CMCC-CMS','CNRM-CM5','CSIRO-Mk3-6-0',
+                 'CanESM2','EC-EARTH','FGOALS-g2','FGOALS-s2','FIO-ESM','GFDL-CM3',
+                 'GFDL-ESM2M','GISS-E2-H-CC','GISS-E2-H','GISS-E2-R-CC','GISS-E2-R',
+                 'HadGEM2-AO','HadGEM2-CC','HadGEM2-ES','IPSL-CM5A-LR','IPSL-CM5A-MR',
+                 'IPSL-CM5B-LR','MIROC-ESM-CHEM','MIROC-ESM','MIROC4h','MIROC5',
+                 'MPI-ESM-LR','MPI-ESM-MR','MPI-ESM-P','MRI-CGCM3','NorESM1-M',
+                 'NorESM1-ME','bcc-csm1-1-m','bcc-csm1-1','inmcm4']
+    cm5Experiments = ['historical','historicalNat']
+    if model not in cm5Models:
+        print ''.join(['Model: ',model,' not a valid CMIP5 contributor'])
+        return None
+    elif experiment not in cm5Experiments:
+        print ''.join(['Experiment: ',experiment,' not currently indexed'])
+        return None
+    else:
+        experiment = 'historical'
+        branchInfo = cmip5.get('ACCESS1-0').get('historical')
+        if r1i1p1 not in branchInfo.keys():
+            print ''.join(['r1i1p1: ',r1i1p1,' not a valid ',model,' ',experiment,' simulation'])
+            return None
+        else:
+            print ''.join(['Model: ',model,'; Exp: ',experiment,'; r1i1p1: ',r1i1p1,
+                           ' branch times found'])
+            branchInfoDict = branchInfo
+
+    return branchInfoDict
+
 #%%
 def clearAll():
     """
@@ -217,12 +274,13 @@ def fixInterpAxis(var):
         >>> (slope),(slope_err) = linearregression(fixInterpAxis(var),error=1,nointercept=1)
 
     Notes:
+    - PJD  6 Sep 2018 - Corrected time units 0-1-1 to 1-1-1
     -----
         ...
     """
     tind = range(shape(var)[0]) ; # Assume time axis is dimension 0
     t = cdm.createAxis(tind,id='time')
-    t.units = 'years since 0-01-01 0:0:0.0'
+    t.units = 'years since 1-01-01 0:0:0.0'
     t.calendar = var.getTime().calendar
     cdu.times.setTimeBoundsYearly(t) ; # Explicitly set time bounds to yearly
     var.setAxis(0,t)
@@ -318,11 +376,15 @@ def getGitInfo(filePath):
     * PJD 26 Aug 2016 - Added tag/release info
     * PJD 31 Aug 2016 - Convert tag info to use describe function
     * PJD  1 Sep 2016 - Upgrade test logic
+    * PJD 15 Nov 2016 - Broadened error case if not a valid git-tracked file
+    * PJD 28 Nov 2016 - Tweaks to get git tags registering
+    * PJD 17 Jul 2017 - Further work required to deal with tags which include '-' characters
     ...
     """
     # Test current work dir
     if os.path.isfile(filePath) or os.path.isdir(filePath):
         currentWorkingDir = os.path.split(filePath)[0]
+        #os.chdir(currentWorkingDir) ; # Add convert to local dir
     else:
         print 'filePath invalid, exiting'
         return ''
@@ -330,10 +392,15 @@ def getGitInfo(filePath):
     p = subprocess.Popen(['git','log','-n1','--',filePath],
                          stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                          cwd=currentWorkingDir)
-    if 'fatal: Not a git repository' in p.stderr.read():
+    stdout = p.stdout.read() ; # Use persistent variables for tests below
+    stderr = p.stderr.read()
+    if stdout == '' and stderr == '':
         print 'filePath not a valid git-tracked file'
         return
-    gitLogFull = p.stdout.read() ; # git full log
+    elif 'fatal: ' in stderr:
+        print 'filePath not a valid git-tracked file'
+        return
+    gitLogFull = stdout ; # git full log
     del(p)
     gitLog = []
     for count,gitStr in enumerate(gitLogFull.split('\n')):
@@ -352,22 +419,46 @@ def getGitInfo(filePath):
     # Get tag info
     #p = subprocess.Popen(['git','log','-n1','--no-walk','--tags',
     #                      '--pretty="%h %d %s"','--decorate=full',filePath],
-    p = subprocess.Popen(['git','describe','--tags',filePath],
+    p = subprocess.Popen(['git','describe','--tags'],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           cwd=currentWorkingDir)
     gitTag = p.stdout.read() ; # git tag log
+    #print 'gitTag',gitTag
     gitTagErr = p.stderr.read() ; # Catch tag-less error
+    #print 'gitTagErr',gitTagErr
     del(filePath,p)
     if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
         gitLog.extend(['latest_tagPoint: None'])
     elif gitTag != '':
+        # Example gitTag='CMOR-3.2.5\n' https://github.com/WCRP-CMIP/CMIP6_CVs/releases/tag/CMOR-3.2.5
+        # Example gitTag='CMOR-3.2.5-42-gb07f789\n'
         for count,gitStr in enumerate(gitTag.split('\n')):
-            tagBits = gitStr.split['-']
-            tag = tagBits[0]
-            if len(tagBits) > 1:
+            #print 'count,gitStr',count,gitStr
+            if gitStr == '':
+                continue
+            #hyphInds = []; ind = 0
+            #while ind < len(gitStr):
+            #    hyphInds.append(gitStr.rfind('-',ind))
+            #    ind = gitStr.find('-',ind)
+            tagBits = gitStr.split('-')
+            #print tagBits
+            tag = tagBits[0] ; # Doesn't work with 'CMOR-3.2.5\n'
+            #print tag,len(tag)
+            if gitTag.count('-') == 1: # Case tag point e.g. 'CMOR-3.2.5\n'
+                tagPastCount = '0'
+                tagHash = gitLog[0].replace('commit: ','')[0:7]
+                tag = gitTag.strip('\n')
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
+            elif gitTag.count('-') == 2: # Case beyond tag point
                 tagPastCount = tagBits[1]
                 tagHash = tagBits[2]
-                gitLog.extend(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])
+                tag = tagBits[0]
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
+            elif gitTag.count('-') == 3: # Case beyond tag point
+                tagPastCount = tagBits[2]
+                tagHash = tagBits[3]
+                tag = gitTag.split('\n')[0]
+                gitLog.extend([''.join(['latest_tagPoint: ',tag,' (',tagPastCount,'; ',tagHash,')'])])
             else:
                 gitLog.extend(['latest_tagPoint: ',tag])
     else:
@@ -377,7 +468,7 @@ def getGitInfo(filePath):
         return ''
 
     # Order list
-    gitLog = [gitLog[0],gitLog[3],gitLog[-1],gitLog[2],gitLog[1]]
+    gitLog = [gitLog[0],gitLog[3],gitLog[4],gitLog[2],gitLog[1]]
 
     return gitLog
 
@@ -421,27 +512,34 @@ def globalAttWrite(file_handle,options):
 
     Notes:
     -----
-    ...
+    * PJD 19 Apr 2018 - Corrected UTC offset, now correct times are reported - https://github.com/stub42/pytz/issues/12
     """
     import cdat_info,pytz
-    # Create timestamp, corrected to UTC for history
-    local                       = pytz.timezone("America/Los_Angeles")
-    time_now                    = datetime.datetime.now();
-    local_time_now              = time_now.replace(tzinfo = local)
-    utc_time_now                = local_time_now.astimezone(pytz.utc)
-    time_format                 = utc_time_now.strftime("%d-%m-%Y %H:%M:%S %p")
+    # Create timestamp, using UTC for history
+    utcNow      = datetime.datetime.utcnow();
+    utcNow      = utcNow.replace(tzinfo=pytz.utc)
+    timeFormat  = utcNow.strftime("%d-%m-%Y %H:%M:%S %p")
+    localTz     = pytz.timezone("America/Los_Angeles")
+    localNow    = utcNow.astimezone(localTz)
+    cdatVerInfo = cdat_info.version() ; # Deal with quirky formats
+    if len(cdatVerInfo) > 2:
+        cdatVerInfo = ".".join(["%s" % el for el in cdat_info.version()])
+    else:
+        cdatVerInfo = cdat_info.version()[-1].strip('v') ; # Trim off the v
+
     if 'options' in locals() and not options == None:
         if options.lower() == 'noid':
-            file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-            file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
+            file_handle.history = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
+            file_handle.host    = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
                                                    '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         else:
             print '** Invalid options passed, skipping global attribute write.. **'
     else:
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
-        file_handle.history         = "".join(['File processed: ',time_format,' UTC; San Francisco, CA, USA'])
-        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',".".join(["%s" % el for el in cdat_info.version()]),
-                                           '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+        file_handle.history         = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
+
+        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
+                                               '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
 
 #%%

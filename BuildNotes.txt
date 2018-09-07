@@ -1,0 +1,42 @@
+160712 1528
+
+# Notes for building and uploading to conda
+> cd /export/durack1/git
+> conda build durolib
+# Blurb from conda
+> anaconda upload /export/durack1/anaconda2/conda-bld/noarch/durolib-1.0-py_0.tar.bz2
+
+170131 1443
+
+# Notes for building and uploading to conda
+# Update meta.yaml and setup.py
+> conda build purge
+> conda build durolib -c conda-forge
+# Blurb from conda
+> anaconda upload /Users/durack1/anaconda2/conda-bld/noarch/durolib-1.0.1-0.tar.bz2
+
+170308 1528 - 1.0.2
+
+# Notes for updating environment (on durack1ml), building and uploading to conda
+# Update meta.yaml and setup.py
+> conda update --prefix /Users/durack1/anaconda2 anaconda ; # Update conda environment
+> conda update -n root conda-build ; # Update conda-build
+> cd /sync/git/
+> conda build purge ; # Cleanup build environment
+> conda build durolib -c conda-forge
+# Blurb from conda-build
+# Connect to LLNL-Green ; # Get around SSL issues
+> anaconda upload /Users/durack1/anaconda2/conda-bld/noarch/durolib-1.0.2-0.tar.bz2
+
+180618 1643 - 1.1.0
+
+# Notes for updating environment (on durack1ml), building and uploading to conda
+# Update meta.yaml and setup.py - both reflect v1.1.0 release
+[durack1ml:sync/git/durolib] durack1% conda update --prefix /Users/durack1/anaconda2 anaconda ; # Update conda root environment
+[durack1ml:sync/git/durolib] durack1% conda update -n root conda-build ; # Update conda-build in root environment
+> cd /sync/git/
+> conda build purge ; # Cleanup build environment
+> conda build durolib -c conda-forge
+# Blurb from conda-build
+# Connect to LLNL-Green ; # Get around SSL issues
+> anaconda upload /Users/durack1/anaconda2/conda-bld/noarch/durolib-1.1.0-py27_1.tar.bz2
