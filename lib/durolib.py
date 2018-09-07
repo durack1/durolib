@@ -40,6 +40,7 @@ Paul J. Durack 27th May 2013
 |  PJD 19 Apr 2018  - Corrected UTC offset, now correct times are reported - https://github.com/durack1/durolib/issues/20 & stub42/pytz/issues/12
 |  PJD 18 Jun 2018  - Added cmipBranchTime function https://github.com/durack1/durolib/issues/6
 |  PJD  6 Sep 2018  - Corrected fixInterpAxis time units
+|  PJD  6 Sep 2018  - Updated globalAttWrite to reference CDAT (not UVCDAT) version
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -69,7 +70,7 @@ try:
     import cdutil as cdu
     #import genutil as genu
     import MV2 as mv
-    ## Specify UVCDAT specific stuff ##
+    ## Specify CDAT specific stuff ##
     # Set netcdf file criterion - turned on from default 0s
     cdm.setCompressionWarnings(0) ; # Suppress warnings
     cdm.setNetcdfShuffleFlag(0)
@@ -530,7 +531,7 @@ def globalAttWrite(file_handle,options):
     if 'options' in locals() and not options == None:
         if options.lower() == 'noid':
             file_handle.history = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
-            file_handle.host    = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
+            file_handle.host    = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
                                                    '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         else:
             print '** Invalid options passed, skipping global attribute write.. **'
@@ -538,7 +539,7 @@ def globalAttWrite(file_handle,options):
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
         file_handle.history         = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
 
-        file_handle.host            = "".join([gethostname(),'; UVCDAT version: ',cdatVerInfo,
+        file_handle.host            = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
                                                '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
 
@@ -911,7 +912,7 @@ def santerTime(array,calendar=None):
             NoLeapCalendar
             Calendar360
         For more information consult:
-            http://uvcdat.llnl.gov/documentation/cdms/cdms_3.html#3.2
+            http://cdat.llnl.gov/documentation/cdms/cdms_3.html#3.2
 
         Author: Paul J. Durack : pauldurack@llnl.gov
 
