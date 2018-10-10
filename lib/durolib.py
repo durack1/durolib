@@ -1056,7 +1056,7 @@ def trimModelList(modelFileList):
             exp     = file1.split('.')[2]
             rea     = file1.split('.')[5]
             # Test rea for r1i1pf1 format match
-            reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}p\d{1,3}')
+            reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}f\d{1,3}')
         # Evaluate components
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
