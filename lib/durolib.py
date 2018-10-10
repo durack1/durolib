@@ -1025,6 +1025,7 @@ def trimModelList(modelFileList):
     - PJD  1 Apr 2014 - Implement sanity checks for r1i1p1 matching for e.g.
     - PJD  1 Apr 2014 - Removed hard-coded ver- position
     - PJD  1 Apr 2014 - Added realisation test to ensure expected format
+    - PJD 10 Oct 2018 - Update to deal with new CMIPLib filenames (CMIP6 data)
     """
     # Check for list variable
     if type(modelFileList) is not list:
@@ -1039,11 +1040,24 @@ def trimModelList(modelFileList):
     # Create subset modelFileList
     for file1 in modelFileList:
         file1   = file1.split('/')[-1]
-        mod     = file1.split('.')[1]
-        exp     = file1.split('.')[2]
-        rea     = file1.split('.')[3]
-        # Test rea for r1i1p111 format match
-        reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
+        if 'cmip5' == file1.split('.')[0]:
+            #cmip5-test/historical/atm/mo/tas/
+            #cmip5.ACCESS1-0.historical.r1i1p1.mo.atm.Amon.tas.ver-1.latestX.xml
+            #cmip5.ACCESS1-0.historical.r1i1p1.mo.atm.Amon.tas.ver-v20120329.latestX.xml
+            mod     = file1.split('.')[1]
+            exp     = file1.split('.')[2]
+            rea     = file1.split('.')[3]
+            # Test rea for r1i1p111 format match
+            reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
+        elif 'CMIP6' == file1.split('.')[0]:
+            #cmip-dyn/CMIP6/CMIP/historical/atmos/mon/tas/
+            #CMIP6.CMIP.historical.NOAA-GFDL.GFDL-CM4.r1i1p1f1.mon.tas.atmos.glb-z1-gr1.v20180301.0000000.0.xml
+            mod     = file1.split('.')[4]
+            exp     = file1.split('.')[2]
+            rea     = file1.split('.')[5]
+            # Test rea for r1i1pf1 format match
+            reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}p\d{1,3}')
+        # Evaluate components
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
             return ''
