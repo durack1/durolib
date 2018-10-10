@@ -1027,24 +1027,32 @@ def trimModelList(modelFileList):
     - PJD  1 Apr 2014 - Added realisation test to ensure expected format
     - PJD 10 Oct 2018 - Update to deal with new CMIPLib filenames (CMIP6 data)
     
+    CMIP6:
     
     In [1]: from durolib import trimModelList
     In [2]: import glob
     In [3]: fileList = glob.glob('/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/*.xml')
     In [4]: fileListTrim = trimModelList(fileList)
+    tmp: ['CNRM-CM6-1.piControl.r1i1p1f2.glb-l-gr', 'CNRM-CM6-1.piControl.r1i1p1f2.glb-p19-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-l-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-l-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-p19-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-p19-gr']
+    Unique: ['CNRM-CM6-1.piControl.r1i1p1f2.glb-l-gr', 'CNRM-CM6-1.piControl.r1i1p1f2.glb-p19-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-l-gr', 'IPSL-CM6A-LR.piControl.r1i1p1f1.glb-p19-gr']
+    Index: [[0], [1], [2, 3], [4, 5]]
     In [5]: fileList
     Out[5]: 
-    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-l-gr.v20180814.0000000.0.xml', <- missing this
+    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-l-gr.v20180814.0000000.0.xml',
      '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-p19-gr.v20180814.0000000.0.xml',
-     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180314.0000000.0.xml', <- missing this
-     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180802.0000000.0.xml', <- missing this
-     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180314.0000000.0.xml', <- incorrectly returning this
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180314.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180802.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180314.0000000.0.xml',
      '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180802.0000000.0.xml']
     In [6]: fileListTrim
     Out[6]: 
-    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-p19-gr.v20180814.0000000.0.xml',
-     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180314.0000000.0.xml',
+    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-l-gr.v20180814.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-p19-gr.v20180814.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180802.0000000.0.xml',
      '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180802.0000000.0.xml']
+
+    CMIP5:
+    
     
     
     """
@@ -1064,7 +1072,8 @@ def trimModelList(modelFileList):
     # Create subset modelFileList
     for file1 in modelFileList:
         file1   = file1.split('/')[-1]
-        if 'cmip5' == file1.split('.')[0]:
+        if file1.split('.')[0] in ['cmip5','CMIP5']:
+            print 'enter cmip5'
             cmip5 = True
             #cmip5-test/historical/atm/mo/tas/
             #cmip5.ACCESS1-0.historical.r1i1p1.mo.atm.Amon.tas.ver-1.latestX.xml
