@@ -1041,6 +1041,7 @@ def trimModelList(modelFileList):
     for file1 in modelFileList:
         file1   = file1.split('/')[-1]
         if 'cmip5' == file1.split('.')[0]:
+            cmip5 = True
             #cmip5-test/historical/atm/mo/tas/
             #cmip5.ACCESS1-0.historical.r1i1p1.mo.atm.Amon.tas.ver-1.latestX.xml
             #cmip5.ACCESS1-0.historical.r1i1p1.mo.atm.Amon.tas.ver-v20120329.latestX.xml
@@ -1050,6 +1051,7 @@ def trimModelList(modelFileList):
             # Test rea for r1i1p111 format match
             reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
         elif 'CMIP6' == file1.split('.')[0]:
+            cmip6 = True
             #cmip-dyn/CMIP6/CMIP/historical/atmos/mon/tas/
             #CMIP6.CMIP.historical.NOAA-GFDL.GFDL-CM4.r1i1p1f1.mon.tas.atmos.glb-z1-gr1.v20180301.0000000.0.xml
             mod     = file1.split('.')[4]
@@ -1076,17 +1078,24 @@ def trimModelList(modelFileList):
             # Get version and creation_date info from file
             modelFileListVersion = [] ; modelFileListCreationDate = [] ; modelFileListIndex = []
             for index in modelFileListTmpIndex[count]:
-                file1 = modelFileList[index].split('/')[-1]
-                print file1
-                print 'new:',str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]')
-                verInd = int(str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]'))
-                ver1 = file1.split('.')[verInd].replace('ver-','')
                 f_h = cdm.open(modelFileList[index])
-                CD = f_h.creation_date
+                if cmip5:
+                    file1 = modelFileList[index].split('/')[-1]
+                    print file1
+                    print 'new:',str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]')
+                    verInd = int(str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]'))
+                    ver1 = file1.split('.')[verInd].replace('ver-','')
+                    CD = f_h.creation_date
+                    modelFileListVersion.append(ver1)
+                    modelFileListCreationDate.append(CD)
+                    modelFileListIndex.append(index)
+                elif cmip6:
+                    ver1 = file1.split('.')[10]
+                    CD = f_h.creation_date
+                    modelFileListVersion.append(ver1)
+                    modelFileListCreationDate.append(CD)
+                    modelFileListIndex.append(index)
                 f_h.close()
-                modelFileListVersion.append(ver1)
-                modelFileListCreationDate.append(CD)
-                modelFileListIndex.append(index)
             #print modelFileListVersion
             #print modelFileListCreationDate
 
