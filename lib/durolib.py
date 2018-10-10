@@ -1026,6 +1026,27 @@ def trimModelList(modelFileList):
     - PJD  1 Apr 2014 - Removed hard-coded ver- position
     - PJD  1 Apr 2014 - Added realisation test to ensure expected format
     - PJD 10 Oct 2018 - Update to deal with new CMIPLib filenames (CMIP6 data)
+    
+    
+    In [1]: from durolib import trimModelList
+    In [2]: import glob
+    In [3]: fileList = glob.glob('/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/*.xml')
+    In [4]: fileListTrim = trimModelList(fileList)
+    In [5]: fileList
+    Out[5]: 
+    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-l-gr.v20180814.0000000.0.xml', <- missing this
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-p19-gr.v20180814.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180314.0000000.0.xml', <- missing this
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-l-gr.v20180802.0000000.0.xml', <- missing this
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180314.0000000.0.xml', <- incorrectly returning this
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180802.0000000.0.xml']
+    In [6]: fileListTrim
+    Out[6]: 
+    ['/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.CNRM-CERFACS.CNRM-CM6-1.r1i1p1f2.mon.hur.atmos.glb-p19-gr.v20180814.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180314.0000000.0.xml',
+     '/work/cmip-dyn/CMIP6/CMIP/piControl/atmos/mon/hur/CMIP6.CMIP.piControl.IPSL.IPSL-CM6A-LR.r1i1p1f1.mon.hur.atmos.glb-p19-gr.v20180802.0000000.0.xml']
+    
+    
     """
     # Check for list variable
     if type(modelFileList) is not list:
@@ -1074,6 +1095,9 @@ def trimModelList(modelFileList):
     modelFileListTmpUnique = list(set(modelFileListTmp)) ; modelFileListTmpUnique.sort()
     findMatches = lambda searchList,elem: [[i for i, x in enumerate(searchList) if x == e] for e in elem]
     modelFileListTmpIndex = findMatches(modelFileListTmp,modelFileListTmpUnique)
+    print 'tmp:',modelFileListTmp
+    print 'Unique:',modelFileListTmpUnique
+    print 'Index:',modelFileListTmpIndex
 
     # Loop through unique list
     for count,modelNum in enumerate(modelFileListTmpIndex):
