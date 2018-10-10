@@ -1036,6 +1036,9 @@ def trimModelList(modelFileList):
     modelFileList.sort()
     modelFileListTmp = []
     modelFileIndex = []
+    
+    # Create test defaults
+    cmip5,cmip6 = [False for _ in range(2)]
 
     # Create subset modelFileList
     for file1 in modelFileList:
@@ -1095,6 +1098,8 @@ def trimModelList(modelFileList):
                     modelFileListVersion.append(ver1)
                     modelFileListCreationDate.append(CD)
                     modelFileListIndex.append(index)
+                else:
+                    print '** mip_era unidentified, exiting.. **'
                 f_h.close()
             #print modelFileListVersion
             #print modelFileListCreationDate
