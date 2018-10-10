@@ -1077,6 +1077,7 @@ def trimModelList(modelFileList):
             modelFileListVersion = [] ; modelFileListCreationDate = [] ; modelFileListIndex = []
             for index in modelFileListTmpIndex[count]:
                 file1 = modelFileList[index].split('/')[-1]
+                print str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]')
                 verInd = int(str([count for count,x in enumerate(file1.split('.')) if 'ver-' in x]).strip('[]'))
                 ver1 = file1.split('.')[verInd].replace('ver-','')
                 f_h = cdm.open(modelFileList[index])
