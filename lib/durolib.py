@@ -1093,7 +1093,10 @@ def trimModelList(modelFileList):
             rea     = file1.split('.')[5]
             gridLab = file1.split('.')[9]
             # Test rea for r1i1pf1 format match
-            reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}f\d{1,3}')
+            if file1.split('.')[0] == 'CMIP5':
+                reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
+            elif file1.split('.')[0] == 'CMIP5':
+                reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}f\d{1,3}')
         # Evaluate components
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
