@@ -1036,7 +1036,7 @@ def trimModelList(modelFileList):
     modelFileList.sort()
     modelFileListTmp = []
     modelFileIndex = []
-    
+
     # Create test defaults
     cmip5,cmip6 = [False for _ in range(2)]
 
@@ -1051,6 +1051,7 @@ def trimModelList(modelFileList):
             mod     = file1.split('.')[1]
             exp     = file1.split('.')[2]
             rea     = file1.split('.')[3]
+            gridLab = 'x'
             # Test rea for r1i1p111 format match
             reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}')
         elif 'CMIP6' == file1.split('.')[0]:
@@ -1060,13 +1061,14 @@ def trimModelList(modelFileList):
             mod     = file1.split('.')[4]
             exp     = file1.split('.')[2]
             rea     = file1.split('.')[5]
+            gridLab = file1.split('.')[10]
             # Test rea for r1i1pf1 format match
             reaTest = re.compile('^r\d{1,2}i\d{1,2}p\d{1,3}f\d{1,3}')
         # Evaluate components
         if not reaTest.match(rea):
             print '** Filename format invalid - rea: ',rea,', exiting.. **'
             return ''
-        modelFileListTmp.append('.'.join([mod,exp,rea]))
+        modelFileListTmp.append('.'.join([mod,exp,rea,gridLab]))
 
     # Create unique list and index
     modelFileListTmpUnique = list(set(modelFileListTmp)) ; modelFileListTmpUnique.sort()
