@@ -41,7 +41,7 @@ Paul J. Durack 27th May 2013
 |  PJD 18 Jun 2018  - Added cmipBranchTime function https://github.com/durack1/durolib/issues/6
 |  PJD  6 Sep 2018  - Corrected fixInterpAxis time units
 |  PJD  6 Sep 2018  - Updated globalAttWrite to reference CDAT (not UVCDAT) version
-|  PJD 10 Oct 2018  - Updated to deal with new CMIPLib paths and filenames (CMIP6/CMIP5/cmip5 data) 
+|  PJD 10 Oct 2018  - Updated to deal with new CMIPLib paths and filenames (CMIP6/CMIP5/cmip5 data) - diagnostic testing included in function docs
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
