@@ -40,3 +40,17 @@
 # Blurb from conda-build
 # Connect to LLNL-Green ; # Get around SSL issues
 > anaconda upload /Users/durack1/anaconda2/conda-bld/noarch/durolib-1.1.0-py27_1.tar.bz2
+
+181010 1654 - 1.1.1
+
+# Notes for updating environment (on durack1ml), building and uploading to conda
+# Update meta.yaml [build number = 0] and setup.py - both reflect v1.1.1 release
+[ml-9585568:sync/git/durolib] durack1% conda update --prefix /Volumes/durack1ml/anaconda2 anaconda ; # Update conda root environment
+[ml-9585568:sync/git/durolib] durack1% conda update -n base -c defaults conda ; # Update conda base environment
+[ml-9585568:sync/git/durolib] durack1% conda update -n base conda-build ; # Update conda-build in base environment
+> cd /sync/git/
+> conda build purge ; # Cleanup build environment
+> conda build durolib -c conda-forge -c cdat ; # Add cdat dependency
+# Blurb from conda-build
+# Connect to LLNL-Green ; # Get around SSL issues
+> anaconda upload /Volumes/durack1ml/anaconda2/conda-bld/noarch/durolib-1.1.1-py27_0.tar.bz2
