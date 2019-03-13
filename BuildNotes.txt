@@ -70,3 +70,13 @@ Tue Mar 12 18:31:50 PDT 2019
 [durack1@oceanonly ~/git]$ conda build durolib -c conda-forge -c cdat
 # Blurb from conda-build
 # Failure
+# Notes for updating environment (on durack1ml), building and uploading to conda
+# Update meta.yaml [build number = 0] and setup.py - both reflect v1.1.2 release
+[ml-9585568:~] durack1% conda update --prefix /anaconda2 anaconda ; # Update conda root environment, 4.6.7 -> 4.6.8
+[ml-9585568:~] durack1% conda update -n base -c defaults conda
+[ml-9585568:~] durack1% conda update -n base conda-build ; # 3.16.0 -> 3.17.8
+[ml-9585568:sync/git/durolib] durack1% date
+Tue Mar 12 19:36:05 PDT 2019
+[ml-9585568:sync/git/durolib] durack1% cd ..
+/Volumes/durack1ml/sync/git
+[ml-9585568:durack1ml/sync/git] durack1% conda build purge
