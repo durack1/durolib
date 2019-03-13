@@ -83,3 +83,5 @@ Tue Mar 12 19:36:05 PDT 2019
 [ml-9585568:durack1ml/sync/git] durack1% conda build durolib -c conda-forge -c cdat
 # Blurb from conda-build
 # Failure
+# Cleanup setup.py to reference package_data
+[ml-9585568:durack1ml/sync/git] durack1% anaconda upload /anaconda2/conda-bld/noarch/durolib-1.1.2-py27_0.tar.bz2
