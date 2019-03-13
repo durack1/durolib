@@ -9,14 +9,14 @@ setup(
       author = "Paul J. Durack",
       author-email = "durack1@llnl.gov",
       data_files = [('share/durolib/data',['data/CMIP5BranchTimes.json',
-                                     'data/CMIP5BranchTimes.pickle'])],
+                                           'data/CMIP5BranchTimes.pickle'])],
       description = "Python utilities for climate",
       packages = ['durolib'],
-      package_dir = {'durolib': 'lib'},
       url = "http://github.com/durack1/durolib",
       version=Version,
       )
 
+#      package_dir = {'durolib': 'lib'},
 #      package_data = {'durolib': ['data/CMIP5BranchTimes.json',
 #                                  'data/CMIP5BranchTimes.pickle']},
 #      include_package_data = True,
