@@ -80,3 +80,6 @@ Tue Mar 12 19:36:05 PDT 2019
 [ml-9585568:sync/git/durolib] durack1% cd ..
 /Volumes/durack1ml/sync/git
 [ml-9585568:durack1ml/sync/git] durack1% conda build purge
+[ml-9585568:durack1ml/sync/git] durack1% conda build durolib -c conda-forge -c cdat
+# Blurb from conda-build
+# Failure
