@@ -7,6 +7,6 @@ setup (name = "durolib",
        url = "http://github.com/durack1/durolib",
        packages = ['durolib'],
        package_dir = {'durolib': 'lib'},
-       package_data = {'durolib': ['lib/CMIP5BranchTimes.json',
-                                'lib/CMIP5BranchTimes.pickle']}
+       package_data = {'durolib': ['data/CMIP5BranchTimes.json',
+                                   'data/CMIP5BranchTimes.pickle']}
       )
