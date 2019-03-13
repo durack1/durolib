@@ -44,6 +44,7 @@ Paul J. Durack 27th May 2013
 |  PJD 10 Oct 2018  - Updated to deal with new CMIPLib paths and filenames (CMIP6/CMIP5/cmip5 data) - diagnostic testing included in function docs
 |  PJD 12 Mar 2019  - Updated trimModelList to deal with cmip-dyn paths
 |  PJD 12 Mar 2019  - Updated setup.py to deal with CMIP5BranchTime.json
+|  PJD 13 Mar 2019  - Updated to deal with new conda/setuptools distrib install - durolib_egg_path
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -64,8 +65,18 @@ from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
-# This determines the local file cache
-durolib_egg_path = pkg_resources.resource_filename(pkg_resources.Requirement.parse('durolib'),'share/durolib/data')
+# Determine if local file or conda install
+#print 'sys.argv[0]:',os.path.realpath(sys.argv[0])
+#print '__file__:',os.path.realpath(__file__)
+if 'site-packages' in os.path.realpath(__file__):
+    durolib_egg_path = pkg_resources.resource_filename(pkg_resources.Requirement.parse('durolib'),'share/durolib/data')
+else:
+    #print os.path.realpath(__file__).split('/')[:-2]
+    #print os.path.join([os.path.realpath(__file__).split('/')[:-2],'data'])
+    srcPath = os.path.realpath(__file__).split('/')[:-2]
+    srcPath = os.path.join(*srcPath)
+    durolib_egg_path = os.path.join('/',srcPath,'data')
+#print durolib_egg_path
 
 # Move UV-CDAT packages into try block
 try:
