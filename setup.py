@@ -1,4 +1,4 @@
-from setuptools import setup
+from distutils.core import setup
 Version="1.1.2"
 setup (name = "durolib",
        author="Paul J. Durack (durack1@llnl.gov)",
