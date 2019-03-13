@@ -54,3 +54,29 @@
 # Blurb from conda-build
 # Connect to LLNL-Green ; # Get around SSL issues
 > anaconda upload /Volumes/durack1ml/anaconda2/conda-bld/noarch/durolib-1.1.1-py27_0.tar.bz2
+
+190312 1430 - 1.1.2
+
+# Notes for updating environment (on oceanonly), building and uploading to conda
+# Update meta.yaml [build number = 0] and setup.py - both reflect v1.1.2 release
+[durack1@oceanonly durolib]$ conda update --prefix /export/durack1/anaconda2 anaconda ; # Update conda root environment, 4.6.7 -> 4.6.8
+[durack1@oceanonly durolib]$ conda update -n base -c defaults conda ; Update conda base environment
+[durack1@oceanonly durolib]$ conda update -n base conda-build ; Update conda-build in base environment, 3.15.1 -> 3.17.8
+[durack1@oceanonly durolib]$ date
+Tue Mar 12 18:31:50 PDT 2019
+[durack1@oceanonly durolib]$ cd ../
+/export/durack1/git
+[durack1@oceanonly ~/git]$ conda build purge
+[durack1@oceanonly ~/git]$ conda build durolib -c conda-forge -c cdat
+# Blurb from conda-build
+# Failure
+# Notes for updating environment (on durack1ml), building and uploading to conda
+# Update meta.yaml [build number = 0] and setup.py - both reflect v1.1.2 release
+[ml-9585568:~] durack1% conda update --prefix /anaconda2 anaconda ; # Update conda root environment, 4.6.7 -> 4.6.8
+[ml-9585568:~] durack1% conda update -n base -c defaults conda
+[ml-9585568:~] durack1% conda update -n base conda-build ; # 3.16.0 -> 3.17.8
+[ml-9585568:sync/git/durolib] durack1% date
+Tue Mar 12 19:36:05 PDT 2019
+[ml-9585568:sync/git/durolib] durack1% cd ..
+/Volumes/durack1ml/sync/git
+[ml-9585568:durack1ml/sync/git] durack1% conda build purge
