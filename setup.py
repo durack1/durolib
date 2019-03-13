@@ -1,4 +1,4 @@
-from distutils.core import setup
+from setuptools import setup
 Version="1.1.2"
 setup (name = "durolib",
        author="Paul J. Durack (durack1@llnl.gov)",
@@ -8,5 +8,6 @@ setup (name = "durolib",
        packages = ['durolib'],
        package_dir = {'durolib': 'lib'},
        package_data = {'durolib': ['data/CMIP5BranchTimes.json',
-                                   'data/CMIP5BranchTimes.pickle']}
+                                   'data/CMIP5BranchTimes.pickle',]},
+       include_package_data=True,
       )
