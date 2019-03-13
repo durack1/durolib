@@ -10,4 +10,6 @@ setup (name = "durolib",
        package_data = {'durolib': ['data/CMIP5BranchTimes.json',
                                    'data/CMIP5BranchTimes.pickle',]},
        include_package_data=True,
+       data_files = [('data',['data/CMIP5BranchTimes.json',
+                              'data/CMIP5BranchTimes.pickle'])],
       )

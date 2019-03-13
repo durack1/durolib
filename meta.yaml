@@ -7,7 +7,7 @@ source:
     git_url: git://github.com/durack1/durolib.git
 
 build:
-  number: 2
+  number: 3
   noarch: True
 #  noarch_python: True
 
