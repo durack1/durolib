@@ -54,7 +54,7 @@ This library contains all functions written to replicate matlab functionality in
 
 ## Import common modules ##
 #import pdb
-import calendar,code,datetime,errno,glob,inspect,json,os,re,ssl,string,sys,time,urllib2
+import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time,urllib2
 #import matplotlib as plt
 import numpy as np
 import subprocess
@@ -63,6 +63,9 @@ from numpy import isnan,shape
 from socket import gethostname
 from string import replace
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
+
+# This determines the local file cache
+durolib_egg_path = pkg_resources.resource_filename(pkg_resources.Requirement.parse('durolib'),'share/durolib/data')
 
 # Move UV-CDAT packages into try block
 try:
@@ -109,7 +112,7 @@ def cmipBranchTime(model,experiment,r1i1p1):
     - Currently only contains CMIP5 historical simulation branch information
     """
     # Load dictionary into memory
-    cmip5 = json.load(open('data/CMIP5BranchTimes.json','r'))
+    cmip5 = json.load(open(os.path.join(durolib_egg_path,'CMIP5BranchTimes.json'),'r'))
     # Validate user input
     cm5Models = ['model','ACCESS1-0','ACCESS1-3','BNU-ESM','CCSM4','CESM1-BGC',
                  'CESM1-CAM5','CESM1-CAM5-1-FV2','CESM1-FASTCHEM','CESM1-WACCM',

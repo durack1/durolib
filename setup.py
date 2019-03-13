@@ -1,12 +1,22 @@
-from distutils.core import setup
+from setuptools import setup
+
+# Set package version
 Version="1.1.2"
-setup (name = "durolib",
-       author="Paul J. Durack (durack1@llnl.gov)",
-       version=Version,
-       description = "Python utilities for climate",
-       url = "http://github.com/durack1/durolib",
-       packages = ['durolib'],
-       package_dir = {'durolib': 'lib'},
-       data_files = [('durolib/data',['data/CMIP5BranchTimes.json',
-                              'data/CMIP5BranchTimes.pickle'])],
+
+# Call setup function - see https://setuptools.readthedocs.io/en/latest/setuptools.html#adding-setup-arguments
+setup(
+      name = "durolib",
+      author = "Paul J. Durack",
+      author-email = "durack1@llnl.gov",
+      data_files = [('share/durolib/data',['data/CMIP5BranchTimes.json',
+                                     'data/CMIP5BranchTimes.pickle'])],
+      description = "Python utilities for climate",
+      packages = ['durolib'],
+      package_dir = {'durolib': 'lib'},
+      url = "http://github.com/durack1/durolib",
+      version=Version,
       )
+
+#      package_data = {'durolib': ['data/CMIP5BranchTimes.json',
+#                                  'data/CMIP5BranchTimes.pickle']},
+#      include_package_data = True,

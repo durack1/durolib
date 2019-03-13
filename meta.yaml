@@ -3,11 +3,11 @@ package:
     version: 1.1.2
 
 source:
-    git_rev: 1.1.2
+    git_rev: 1.1.2 ; # Specify SHA/branch/tag - git checkout command
     git_url: git://github.com/durack1/durolib.git
 
 build:
-  number: 5
+  number: 7
   noarch: True
 #  noarch_python: True
 
