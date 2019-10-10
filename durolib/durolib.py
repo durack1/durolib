@@ -48,6 +48,7 @@ Paul J. Durack 27th May 2013
 |  PJD 10 Oct 2019  - Update to use __future__ print (py3)
 |  PJD 10 Oct 2019  - Updated following "invalid token" error see
 |                     https://stackoverflow.com/questions/36386346/syntaxerror-invalid-token
+|  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -60,7 +61,7 @@ This library contains all functions written to replicate matlab functionality in
 from __future__ import print_function
 ## Import common modules ##
 #import pdb
-import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time,urllib2
+import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time
 #import matplotlib as plt
 import numpy as np
 import subprocess
@@ -68,6 +69,7 @@ import subprocess
 from numpy import isnan,shape
 from socket import gethostname
 from string import replace
+from urllib.request import urlopen
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
 # Determine if local file or conda install
@@ -904,7 +906,7 @@ def readJsonCreateDict(buildList):
     for count,table in enumerate(buildList):
         #print 'Processing:',table[0]
         # Read web file
-        jsonOutput = urllib2.urlopen(table[1], context=ctx)
+        jsonOutput = urlopen(table[1], context=ctx)
         tmp = jsonOutput.read()
         vars()[table[0]] = tmp
         jsonOutput.close()
