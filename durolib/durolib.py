@@ -45,6 +45,11 @@ Paul J. Durack 27th May 2013
 |  PJD 12 Mar 2019  - Updated trimModelList to deal with cmip-dyn paths
 |  PJD 12 Mar 2019  - Updated setup.py to deal with CMIP5BranchTime.json
 |  PJD 13 Mar 2019  - Updated to deal with new conda/setuptools distrib install - durolib_egg_path
+|  PJD 10 Oct 2019  - Update to use __future__ print (py3)
+|  PJD 10 Oct 2019  - Updated following "invalid token" error see
+|                     https://stackoverflow.com/questions/36386346/syntaxerror-invalid-token
+|  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
+|  PJD 10 Oct 2019  - Update string.replace syntax calls
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -53,16 +58,18 @@ This library contains all functions written to replicate matlab functionality in
 @author: durack1
 """
 
+## Import future print
+from __future__ import print_function
 ## Import common modules ##
 #import pdb
-import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time,urllib2
+import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time
 #import matplotlib as plt
 import numpy as np
 import subprocess
 #import scipy as sp
 from numpy import isnan,shape
 from socket import gethostname
-from string import replace
+from urllib.request import urlopen
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
 # Determine if local file or conda install
@@ -99,7 +106,7 @@ try:
     cdm.setAutoBounds(1) ; # Ensure bounds on time and depth axes are generated
     ##
 except:
-    print '* cdat_info not available, skipping UV-CDAT import *'
+    print('* cdat_info not available, skipping UV-CDAT import *')
 
 ## Define useful functions ##
  #%%
@@ -136,20 +143,20 @@ def cmipBranchTime(model,experiment,r1i1p1):
                  'NorESM1-ME','bcc-csm1-1-m','bcc-csm1-1','inmcm4']
     cm5Experiments = ['historical','historicalNat']
     if model not in cm5Models:
-        print ''.join(['Model: ',model,' not a valid CMIP5 contributor'])
+        print(''.join(['Model: ',model,' not a valid CMIP5 contributor']))
         return None
     elif experiment not in cm5Experiments:
-        print ''.join(['Experiment: ',experiment,' not currently indexed'])
+        print(''.join(['Experiment: ',experiment,' not currently indexed']))
         return None
     else:
         experiment = 'historical'
         branchInfo = cmip5.get('ACCESS1-0').get('historical')
         if r1i1p1 not in branchInfo.keys():
-            print ''.join(['r1i1p1: ',r1i1p1,' not a valid ',model,' ',experiment,' simulation'])
+            print(''.join(['r1i1p1: ',r1i1p1,' not a valid ',model,' ',experiment,' simulation']))
             return None
         else:
-            print ''.join(['Model: ',model,'; Exp: ',experiment,'; r1i1p1: ',r1i1p1,
-                           ' branch times found'])
+            print(''.join(['Model: ',model,'; Exp: ',experiment,'; r1i1p1: ',r1i1p1,
+                           ' branch times found']))
             branchInfoDict = branchInfo
 
     return branchInfoDict
@@ -263,7 +270,7 @@ def fitPolynomial(var,time,polyOrder):
     http://docs.scipy.org/doc/numpy/reference/generated/numpy.polyfit.html
     """
     if polyOrder > 3:
-        print "".join(['** fitPolynomial Error: >cubic fits not supported **',])
+        print(''.join(['** fitPolynomial Error: >cubic fits not supported **',]))
         return
     varFitted = mv.multiply(var,0.) ; # Preallocate output array
     coefs,residuals,rank,singularValues,rcond = np.polyfit(time,var,polyOrder,full=True)
@@ -327,7 +334,7 @@ def fixVarUnits(var,varName,report=False,logFile=None):
     if varName in ['so','sos']:
         if var.max() < 1. and var.mean() < 1.:
             if report:
-                print "".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))])
+                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
                 writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             var_ = var*1000
@@ -338,13 +345,13 @@ def fixVarUnits(var,varName,report=False,logFile=None):
             var = var_
             var_fixed = True
             if report:
-                print "".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))])
+                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
                 writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
     elif varName in 'thetao':
         if var.max() > 50. and var.mean() > 265.:
             if report:
-                print "".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))])
+                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
                 writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             var_ = var-273.15
@@ -355,7 +362,7 @@ def fixVarUnits(var,varName,report=False,logFile=None):
             var = var_
             var_fixed = True
             if report:
-                print "".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))])
+                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
                 writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
 
@@ -405,7 +412,7 @@ def getGitInfo(filePath):
         currentWorkingDir = os.path.split(filePath)[0]
         #os.chdir(currentWorkingDir) ; # Add convert to local dir
     else:
-        print 'filePath invalid, exiting'
+        print('filePath invalid, exiting')
         return ''
     # Get hash, author, dates and notes
     p = subprocess.Popen(['git','log','-n1','--',filePath],
@@ -414,10 +421,10 @@ def getGitInfo(filePath):
     stdout = p.stdout.read() ; # Use persistent variables for tests below
     stderr = p.stderr.read()
     if stdout == '' and stderr == '':
-        print 'filePath not a valid git-tracked file'
+        print('filePath not a valid git-tracked file')
         return
     elif 'fatal: ' in stderr:
-        print 'filePath not a valid git-tracked file'
+        print('filePath not a valid git-tracked file')
         return
     gitLogFull = stdout ; # git full log
     del(p)
@@ -426,7 +433,7 @@ def getGitInfo(filePath):
         if gitStr == '':
             pass
         else:
-            gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
+            gitStr = gitStr.replace('   ',' ') ; # Trim excess whitespace in date
             gitStr = gitStr.replace('commit ','commit: ')
             if count < 3:
                 gitStr = gitStr.strip()
@@ -481,9 +488,9 @@ def getGitInfo(filePath):
             else:
                 gitLog.extend(['latest_tagPoint: ',tag])
     else:
-        print 'Tag retrieval error, exiting'
-        print 'gitTag:',gitTag,len(gitTag)
-        print 'gitTagErr:',gitTagErr,len(gitTagErr)
+        print('Tag retrieval error, exiting')
+        print('gitTag:',gitTag,len(gitTag))
+        print('gitTagErr:',gitTagErr,len(gitTagErr))
         return ''
 
     # Order list
@@ -550,15 +557,15 @@ def globalAttWrite(file_handle,options):
         if options.lower() == 'noid':
             file_handle.history = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
             file_handle.host    = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
-                                                   '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+                                                   '; Python version: ',sys.version.replace('\n','; ').replace(') ;',');')])
         else:
-            print '** Invalid options passed, skipping global attribute write.. **'
+            print('** Invalid options passed, skipping global attribute write.. **')
     else:
         file_handle.data_contact    = "Paul J. Durack; pauldurack@llnl.gov; +1 925 422 5208"
         file_handle.history         = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
 
         file_handle.host            = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
-                                               '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+                                               '; Python version: ',sys.version.replace('\n','; ').replace(') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
 
 #%%
@@ -627,7 +634,7 @@ def keyboard(banner=None):
         raise None
     except:
         frame = sys.exc_info()[2].tb_frame.f_back
-    print "# Use quit() to exit :) Happy debugging!"
+    print('# Use quit() to exit :) Happy debugging!')
     # evaluate commands in current namespace
     namespace = frame.f_globals.copy()
     namespace.update(frame.f_locals)
@@ -677,22 +684,22 @@ def makeCalendar(timeStart,timeEnd,calendarStep='months',monthStart=1,monthEnd=1
     """
     # First check inputs
     if calendarStep not in ['days','months','years']:
-        print '** makeCalendar error: calendarStep unknown, exiting..'
+        print('** makeCalendar error: calendarStep unknown, exiting..')
         return
     if calendarStep == 'years':
         monthStart = 1
         monthEnd = 12
     if not isinstance(timeStart,str) or not isinstance(timeEnd,str):
-        print '** makeCalendar error: timeStart or timeEnd invalid, exiting..'
+        print('** makeCalendar error: timeStart or timeEnd invalid, exiting..')
         return
     if not (int(monthStart) in range(1,13) and int(monthEnd) in range(1,13)):
-        print '** makeCalendar error: monthStart or monthEnd invalid, exiting..'
+        print('** makeCalendar error: monthStart or monthEnd invalid, exiting..')
         return
     try:
         timeStartTest   = cdt.comptime(int(timeStart))
         timeEndTest     = cdt.comptime(int(timeEnd))
-    except SystemExit,err:
-        print '** makeCalendar error: timeStart invalid - ',err
+    except SystemExit as err:
+        print('** makeCalendar error: timeStart invalid - ',err)
         return
 
     # Create comptime objects
@@ -823,13 +830,17 @@ def matchAndTrimBlanks(varList,listFilesList,newVarId):
                 index = modTest.index(masterTest)
                 varMatchList[x][y] = listFilesList[y][0][index]
             except:
-                print format(x,'03d'),''.join(['No ',varList[y],' match for ',masterVar,': ',modelNoRealm])
+                print(format(x,'03d'),''.join(['No ',varList[y],' match for ',masterVar,': ',modelNoRealm]))
         # Create output fileName
-        varMatchList[x][outSlots-1] = replace(replace(varMatchList[x][0].split('/')[-1],masterVarDot,newVarDot),'.latestX.xml','.nc')
+        tmpStr = varMatchList[x][0].split('/')[-1]
+        tmpStr = tmpStr.replace(masterVarDot,newVarDot).replace('.latestX.xml','.nc')
+        varMatchList[x][outSlots-1] = tmpStr
+        #varMatchList[x][outSlots-1] = replace(replace(varMatchList[x][0].split('/')[-1],masterVarDot,newVarDot),'.latestX.xml','.nc')
     return varMatchList
 
 #%%
-def mkDirNoOSErr(newdir,mode=0777):
+def mkDirNoOSErr(newdir,mode=777):
+#def mkDirNoOSErr(newdir,mode=0777): Py3 doesn't accept leading zeros for numbers
     """
     Documentation for mkDirNoOSErr(newdir,mode=0777):
     -------
@@ -887,7 +898,7 @@ def readJsonCreateDict(buildList):
     """
     # Test for list input of length == 2
     if len(buildList[0]) != 2:
-        print 'Invalid inputs, exiting..'
+        print('Invalid inputs, exiting..')
         sys.exit()
     # Create urllib2 context to deal with lab/LLNL web certificates
     ctx                 = ssl.create_default_context()
@@ -898,7 +909,7 @@ def readJsonCreateDict(buildList):
     for count,table in enumerate(buildList):
         #print 'Processing:',table[0]
         # Read web file
-        jsonOutput = urllib2.urlopen(table[1], context=ctx)
+        jsonOutput = urlopen(table[1], context=ctx)
         tmp = jsonOutput.read()
         vars()[table[0]] = tmp
         jsonOutput.close()
@@ -1130,7 +1141,7 @@ Out[8]:
     """
     # Check for list variable
     if type(modelFileList) is not list:
-        print '** Function argument not type list, exiting.. **'
+        print('** Function argument not type list, exiting.. **')
         return ''
 
     # Sort list and declare output
@@ -1176,7 +1187,7 @@ Out[8]:
         # Evaluate components
         if not reaTest.match(rea):
             #pdb.set_trace()
-            print '** Filename format invalid - rea: ',rea,', exiting.. **'
+            print('** Filename format invalid - rea: ',rea,', exiting.. **')
             return ''
         modelFileListTmp.append('.'.join([mod,exp,rea,gridLab]))
 
@@ -1214,7 +1225,7 @@ Out[8]:
                     modelFileListCreationDate.append(CD)
                     modelFileListIndex.append(index)
                 else:
-                    print '** mip_era unidentified, exiting.. **'
+                    print('** mip_era unidentified, exiting.. **')
                 f_h.close()
             #print modelFileListVersion
             #print modelFileListCreationDate
@@ -1285,7 +1296,8 @@ def truncateVerInfo(fileList,varId,modelSuite):
     fileList_noVar,fileList_noVer,fileList_noRealm = [[] for _ in range(3)]
     varId = ''.join(['.',varId])
     for infile in fileList:
-        tmp = replace(replace(replace(infile.split('/')[-1],varId,''),''.join([modelSuite,'.']),''),'.latestX.xml','')
+        #tmp = replace(replace(replace(infile.split('/')[-1],varId,''),''.join([modelSuite,'.']),''),'.latestX.xml','')
+        tmp = infile.split('/')[-1].replace(varId,'').replace(''.join([modelSuite,'.']),'').replace('.latestX.xml','')
         fileList_noVar += [tmp];
         tmp = '.'.join(tmp.split('.')[0:-1]) ; # truncate version info
         fileList_noVer += [tmp]
