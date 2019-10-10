@@ -49,6 +49,7 @@ Paul J. Durack 27th May 2013
 |  PJD 10 Oct 2019  - Updated following "invalid token" error see
 |                     https://stackoverflow.com/questions/36386346/syntaxerror-invalid-token
 |  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
+|  PJD 10 Oct 2019  - Update string.replace syntax calls
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
