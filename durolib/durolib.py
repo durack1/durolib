@@ -68,7 +68,6 @@ import subprocess
 #import scipy as sp
 from numpy import isnan,shape
 from socket import gethostname
-from string import replace
 from urllib.request import urlopen
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
@@ -433,7 +432,7 @@ def getGitInfo(filePath):
         if gitStr == '':
             pass
         else:
-            gitStr = replace(gitStr,'   ',' ') ; # Trim excess whitespace in date
+            gitStr = gitStr.replace('   ',' ') ; # Trim excess whitespace in date
             gitStr = gitStr.replace('commit ','commit: ')
             if count < 3:
                 gitStr = gitStr.strip()
@@ -557,7 +556,7 @@ def globalAttWrite(file_handle,options):
         if options.lower() == 'noid':
             file_handle.history = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
             file_handle.host    = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
-                                                   '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+                                                   '; Python version: ',sys.version.replace('\n','; ').replace(') ;',');')])
         else:
             print('** Invalid options passed, skipping global attribute write.. **')
     else:
@@ -565,7 +564,7 @@ def globalAttWrite(file_handle,options):
         file_handle.history         = "".join(['File processed: ',timeFormat,' UTC; San Francisco, CA, USA'])
 
         file_handle.host            = "".join([gethostname(),'; CDAT version: ',cdatVerInfo,
-                                               '; Python version: ',replace(replace(sys.version,'\n','; '),') ;',');')])
+                                               '; Python version: ',sys.version.replace('\n','; ').replace(') ;',');')])
         file_handle.institution     = "Program for Climate Model Diagnosis and Intercomparison (LLNL), Livermore, CA, U.S.A."
 
 #%%
@@ -832,7 +831,10 @@ def matchAndTrimBlanks(varList,listFilesList,newVarId):
             except:
                 print(format(x,'03d'),''.join(['No ',varList[y],' match for ',masterVar,': ',modelNoRealm]))
         # Create output fileName
-        varMatchList[x][outSlots-1] = replace(replace(varMatchList[x][0].split('/')[-1],masterVarDot,newVarDot),'.latestX.xml','.nc')
+        tmpStr = varMatchList[x][0].split('/')[-1]
+        tmpStr = tmpStr.replace(masterVarDot,newVarDot).replace('.latestX.xml','.nc')
+        varMatchList[x][outSlots-1] = tmpStr
+        #varMatchList[x][outSlots-1] = replace(replace(varMatchList[x][0].split('/')[-1],masterVarDot,newVarDot),'.latestX.xml','.nc')
     return varMatchList
 
 #%%
@@ -1293,7 +1295,8 @@ def truncateVerInfo(fileList,varId,modelSuite):
     fileList_noVar,fileList_noVer,fileList_noRealm = [[] for _ in range(3)]
     varId = ''.join(['.',varId])
     for infile in fileList:
-        tmp = replace(replace(replace(infile.split('/')[-1],varId,''),''.join([modelSuite,'.']),''),'.latestX.xml','')
+        #tmp = replace(replace(replace(infile.split('/')[-1],varId,''),''.join([modelSuite,'.']),''),'.latestX.xml','')
+        tmp = infile.split('/')[-1].replace(varId,'').replace(''.join([modelSuite,'.']),'').replace('.latestX.xml','')
         fileList_noVar += [tmp];
         tmp = '.'.join(tmp.split('.')[0:-1]) ; # truncate version info
         fileList_noVer += [tmp]
