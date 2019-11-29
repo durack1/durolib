@@ -50,6 +50,8 @@ Paul J. Durack 27th May 2013
 |                     https://stackoverflow.com/questions/36386346/syntaxerror-invalid-token
 |  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
 |  PJD 10 Oct 2019  - Update string.replace syntax calls
+|  PJD 27 Nov 2019  - Update fixVarUnits: var.mean() with np.mean(var)
+|  PJD 29 Nov 2019  - Updated fixVarUnits: replace np.mean(var.data) calls with var.min()
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -328,15 +330,24 @@ def fixVarUnits(var,varName,report=False,logFile=None):
 
     Notes:
     -----
+    PJD 29 Nov 2019     - Updated query statements to remove var.mean() calls
         ...
     """
     var_fixed = False
     if varName in ['so','sos']:
-        if var.max() < 1. and var.mean() < 1.:
+#        if var.max() < 1. and var.mean() < 1.:
+        #pdb.set_trace()
+        if var.max() < 1. and np.min(var) < 0.01:
             if report:
-                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),
+                print(''.join(['*SO mean:     {:+06.2f}'.format(np.mean(var.data)),
+                               '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                               '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
-                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),
+                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(np.mean(var.data)),
+                                            '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                                            '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             var_ = var*1000
             var_.id = var.id
             var_.name = var.id
@@ -345,15 +356,28 @@ def fixVarUnits(var,varName,report=False,logFile=None):
             var = var_
             var_fixed = True
             if report:
-                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                print(''.join(['*SO mean:     {:+06.2f}'.format(var.mean()),
+                print(''.join(['*SO mean:     {:+06.2f}'.format(np.mean(var.data)),
+                               '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                               '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
-                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(var.mean()),
+                writeToLog(logFile,"".join(['*SO mean:     {:+06.2f}'.format(np.mean(var.data)),
+                                            '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                                            '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
     elif varName in 'thetao':
-        if var.max() > 50. and var.mean() > 265.:
+#        if var.max() > 50. and var.mean() > 265.:
+        if var.max() > 50. and var.min() > 265.:
             if report:
-                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),
+                print(''.join(['*THETAO mean: {:+06.2f}'.format(np.mean(var.data)),
+                               '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                               '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
-                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),
+                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(np.mean(var.data)),
+                                            '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                                            '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             var_ = var-273.15
             var_.id = var.id
             var_.name = var.id
@@ -362,9 +386,15 @@ def fixVarUnits(var,varName,report=False,logFile=None):
             var = var_
             var_fixed = True
             if report:
-                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                print(''.join(['*THETAO mean: {:+06.2f}'.format(var.mean()),
+                print(''.join(['*THETAO mean: {:+06.2f}'.format(np.mean(var.data)),
+                               '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                               '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
             if logFile is not None:
-                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),'; min: {:+06.2f}'.format(var.min().astype('float64')),'; max: {:+06.2f}'.format(var.max().astype('float64'))]))
+#                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(var.mean()),
+                writeToLog(logFile,"".join(['*THETAO mean: {:+06.2f}'.format(np.mean(var.data)),
+                                            '; min: {:+06.2f}'.format(var.min().astype('float64')),
+                                            '; max: {:+06.2f}'.format(var.max().astype('float64'))]))
 
     return var,var_fixed
 
