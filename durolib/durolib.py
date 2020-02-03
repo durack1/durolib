@@ -1,4 +1,4 @@
-#!/bin/env python
+#!/bin/env python2
 # -*- coding: utf-8 -*-
 """
 Documentation for durolib:
@@ -50,6 +50,7 @@ Paul J. Durack 27th May 2013
 |                     https://stackoverflow.com/questions/36386346/syntaxerror-invalid-token
 |  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
 |  PJD 10 Oct 2019  - Update string.replace syntax calls
+|  PJD  2 Feb 2020  - Reverted urllib2 -> urllib change
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -62,14 +63,14 @@ This library contains all functions written to replicate matlab functionality in
 from __future__ import print_function
 ## Import common modules ##
 #import pdb
-import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time
+import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time,urllib2
 #import matplotlib as plt
 import numpy as np
 import subprocess
 #import scipy as sp
 from numpy import isnan,shape
 from socket import gethostname
-from urllib.request import urlopen
+#from urllib.request import urlopen # py3
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
 # Determine if local file or conda install
@@ -909,7 +910,8 @@ def readJsonCreateDict(buildList):
     for count,table in enumerate(buildList):
         #print 'Processing:',table[0]
         # Read web file
-        jsonOutput = urlopen(table[1], context=ctx)
+        jsonOutput = urllib2.urlopen(table[1], context=ctx) # Py2
+        #jsonOutput = urlopen(table[1], context=ctx) # Py3
         tmp = jsonOutput.read()
         vars()[table[0]] = tmp
         jsonOutput.close()
