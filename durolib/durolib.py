@@ -51,6 +51,7 @@ Paul J. Durack 27th May 2013
 |  PJD 10 Oct 2019  - Update from urllib2 to urllib.request
 |  PJD 10 Oct 2019  - Update string.replace syntax calls
 |  PJD  2 Feb 2020  - Reverted urllib2 -> urllib change
+|  PJD 24 Jul 2020  - Updated readJsonCreateDict to take a second arg, the urlPrefix
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -873,9 +874,9 @@ def outerLocals(depth=0):
     return inspect.getouterframes(inspect.currentframe())[depth+1][0].f_locals
 
 #%%
-def readJsonCreateDict(buildList):
+def readJsonCreateDict(buildList, urlPrefix=''):
     """
-    Documentation for readJsonCreateDict(buildList):
+    Documentation for readJsonCreateDict(buildList, urlPrefix):
     -------
     The readJsonCreateDict() function reads web-based json files and writes
     their contents to a dictionary in memory
@@ -885,12 +886,15 @@ def readJsonCreateDict(buildList):
     The function takes a list argument with two entries. The first is the
     variable name for the assigned dictionary, and the second is the URL
     of the json file to be read and loaded into memory. Multiple entries
-    can be included by generating additional embedded lists
+    can be included by generating additional embedded lists. An optional second
+    argument urlPrefix can be used to simplify list expansion
 
     Usage:
     ------
         >>> from durolib import readJsonCreateDict
-        >>> tmp = readJsonCreateDict([['Omon','https://raw.githubusercontent.com/PCMDI/obs4MIPs-cmor-tables/master/Tables/obs4MIPs_Omon.json']])
+        >>> tmp = readJsonCreateDict([['Omon',
+                                       'PCMDI/obs4MIPs-cmor-tables/master/Tables/obs4MIPs_Omon.json']],
+                                       'https://raw.githubusercontent.com/')
         >>> Omon = tmp.get('Omon')
 
     Notes:
@@ -901,26 +905,35 @@ def readJsonCreateDict(buildList):
     if len(buildList[0]) != 2:
         print('Invalid inputs, exiting..')
         sys.exit()
+
+    # Test for urlPrefix
+    if urlPrefix != '':
+        print('Using URLprefix:', urlPrefix)
+
     # Create urllib2 context to deal with lab/LLNL web certificates
     ctx                 = ssl.create_default_context()
     ctx.check_hostname  = False
     ctx.verify_mode     = ssl.CERT_NONE
+
     # Iterate through buildList and write results to jsonDict
     jsonDict = {}
-    for count,table in enumerate(buildList):
-        #print 'Processing:',table[0]
+    for count, table in enumerate(buildList):
+        #print('Processing:', table[0])
         # Read web file
-        jsonOutput = urllib2.urlopen(table[1], context=ctx) # Py2
+        if urlPrefix != '':
+            url = ''.join([urlPrefix, table[1]])
+            #print(url)
+        jsonOutput = urllib2.urlopen(url, context=ctx) # Py2
         #jsonOutput = urlopen(table[1], context=ctx) # Py3
         tmp = jsonOutput.read()
         vars()[table[0]] = tmp
         jsonOutput.close()
         # Write local json
-        tmpFile = open('tmp.json','w')
+        tmpFile = open('tmp.json', 'w')
         tmpFile.write(eval(table[0]))
         tmpFile.close()
         # Read local json
-        vars()[table[0]] = json.load(open('tmp.json','r'))
+        vars()[table[0]] = json.load(open('tmp.json', 'r'))
         os.remove('tmp.json')
         jsonDict[table[0]] = eval(table[0]) ; # Write to dictionary
 
