@@ -52,6 +52,7 @@ Paul J. Durack 27th May 2013
 |  PJD 10 Oct 2019  - Update string.replace syntax calls
 |  PJD  2 Feb 2020  - Reverted urllib2 -> urllib change
 |  PJD 24 Jul 2020  - Updated readJsonCreateDict to take a second arg, the urlPrefix
+|  PJD 29 Jul 2020  - Updated readJsonCreateDict to correct case when urlPrefix not supplied
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 
@@ -899,7 +900,8 @@ def readJsonCreateDict(buildList, urlPrefix=''):
 
     Notes:
     -----
-        ...
+        PJD 24 Jul 2020  - Updated to take a second arg, the urlPrefix
+        PJD 29 Jul 2020  - Updated to correct case when urlPrefix not supplied
     """
     # Test for list input of length == 2
     if len(buildList[0]) != 2:
@@ -923,6 +925,8 @@ def readJsonCreateDict(buildList, urlPrefix=''):
         if urlPrefix != '':
             url = ''.join([urlPrefix, table[1]])
             #print(url)
+        else:
+            url = table[1]
         jsonOutput = urllib2.urlopen(url, context=ctx) # Py2
         #jsonOutput = urlopen(table[1], context=ctx) # Py3
         tmp = jsonOutput.read()
