@@ -55,6 +55,7 @@ Paul J. Durack 27th May 2013
 |  PJD 29 Jul 2020  - Updated readJsonCreateDict to correct case when urlPrefix not supplied
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
+|  PJD 11 Nov 2020  - Update for Py3 (getGitInfo, readJsonCreateDict)
 
 This library contains all functions written to replicate matlab functionality in python
 
@@ -65,14 +66,18 @@ This library contains all functions written to replicate matlab functionality in
 from __future__ import print_function
 ## Import common modules ##
 #import pdb
-import calendar,code,datetime,errno,glob,inspect,json,os,pkg_resources,re,ssl,string,sys,time,urllib2
+import calendar, code, datetime, errno, glob, inspect, json, os, pkg_resources, \
+       re, ssl, string, sys, time
+try:
+    from urllib2 import urlopen # py2
+except ImportError:
+    from urllib.request import urlopen # py3
 #import matplotlib as plt
 import numpy as np
 import subprocess
 #import scipy as sp
 from numpy import isnan,shape
 from socket import gethostname
-#from urllib.request import urlopen # py3
 # Consider modules listed in /work/durack1/Shared/130103_data_SteveGriffies/130523_mplib_tips/importNPB.py
 
 # Determine if local file or conda install
@@ -408,6 +413,7 @@ def getGitInfo(filePath):
     * PJD 15 Nov 2016 - Broadened error case if not a valid git-tracked file
     * PJD 28 Nov 2016 - Tweaks to get git tags registering
     * PJD 17 Jul 2017 - Further work required to deal with tags which include '-' characters
+    * PJD 13 Nov 2020 - Updated for Py3
     ...
     """
     # Test current work dir
@@ -426,10 +432,13 @@ def getGitInfo(filePath):
     if stdout == '' and stderr == '':
         print('filePath not a valid git-tracked file')
         return
-    elif 'fatal: ' in stderr:
+    #elif 'fatal: ' in stderr: # Py2
+    elif b'fatal: ' in stderr: # Py3
         print('filePath not a valid git-tracked file')
         return
-    gitLogFull = stdout ; # git full log
+    #gitLogFull = stdout # git full log # Py2
+    gitLogFull = stdout.decode('utf-8') # git full log # Py3
+    #print(gitLogFull)
     del(p)
     gitLog = []
     for count,gitStr in enumerate(gitLogFull.split('\n')):
@@ -451,7 +460,8 @@ def getGitInfo(filePath):
     p = subprocess.Popen(['git','describe','--tags'],
                           stdout=subprocess.PIPE,stderr=subprocess.PIPE,
                           cwd=currentWorkingDir)
-    gitTag = p.stdout.read() ; # git tag log
+    #gitTag = p.stdout.read() # git tag log # Py2
+    gitTag = p.stdout.read().decode('utf-8') # git tag log # Py3
     #print 'gitTag',gitTag
     gitTagErr = p.stderr.read() ; # Catch tag-less error
     #print 'gitTagErr',gitTagErr
@@ -497,6 +507,7 @@ def getGitInfo(filePath):
         return ''
 
     # Order list
+    #print('gitLog:',gitLog)
     gitLog = [gitLog[0],gitLog[3],gitLog[4],gitLog[2],gitLog[1]]
 
     return gitLog
@@ -902,6 +913,7 @@ def readJsonCreateDict(buildList, urlPrefix=''):
     -----
         PJD 24 Jul 2020  - Updated to take a second arg, the urlPrefix
         PJD 29 Jul 2020  - Updated to correct case when urlPrefix not supplied
+        PJD 13 Nov 2020  - Updated for Py3
     """
     # Test for list input of length == 2
     if len(buildList[0]) != 2:
@@ -912,7 +924,7 @@ def readJsonCreateDict(buildList, urlPrefix=''):
     if urlPrefix != '':
         print('Using URLprefix:', urlPrefix)
 
-    # Create urllib2 context to deal with lab/LLNL web certificates
+    # Create urllib context to deal with lab/LLNL web certificates
     ctx                 = ssl.create_default_context()
     ctx.check_hostname  = False
     ctx.verify_mode     = ssl.CERT_NONE
@@ -927,19 +939,26 @@ def readJsonCreateDict(buildList, urlPrefix=''):
             #print(url)
         else:
             url = table[1]
-        jsonOutput = urllib2.urlopen(url, context=ctx) # Py2
+        #jsonOutput = urllib.urlopen(url, context=ctx) # Py2
         #jsonOutput = urlopen(table[1], context=ctx) # Py3
+        #print('start')
+        #print(url)
+        #print(ctx)
+        jsonOutput = urlopen(url, context=ctx) # Py3
+        #print('end')
         tmp = jsonOutput.read()
         vars()[table[0]] = tmp
         jsonOutput.close()
         # Write local json
         tmpFile = open('tmp.json', 'w')
-        tmpFile.write(eval(table[0]))
+        #print(table[0])
+        #tmpFile.write(eval(table[0])) # Py2
+        tmpFile.write(eval(table[0]).decode('utf-8')) # Py3
         tmpFile.close()
         # Read local json
         vars()[table[0]] = json.load(open('tmp.json', 'r'))
         os.remove('tmp.json')
-        jsonDict[table[0]] = eval(table[0]) ; # Write to dictionary
+        jsonDict[table[0]] = eval(table[0]) # Write to dictionary
 
     return jsonDict
 
