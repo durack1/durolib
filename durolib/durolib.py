@@ -56,6 +56,7 @@ Paul J. Durack 27th May 2013
 |                   - TODO: Consider implementing multivariate polynomial regression:
 |                     https://github.com/mrocklin/multipolyfit
 |  PJD 11 Nov 2020  - Update for Py3 (getGitInfo, readJsonCreateDict)
+|  PJD 20 Jun 2023  - Updated getGitInfo to test gitTagErr.strip() == b'str' vs 'str' for py3
 
 This library contains all functions written to replicate matlab functionality in python
 
@@ -65,7 +66,7 @@ This library contains all functions written to replicate matlab functionality in
 ## Import future print
 from __future__ import print_function
 ## Import common modules ##
-#import pdb
+# import pdb
 import calendar, code, datetime, errno, glob, inspect, json, os, pkg_resources, \
        re, ssl, string, sys, time
 try:
@@ -414,6 +415,7 @@ def getGitInfo(filePath):
     * PJD 28 Nov 2016 - Tweaks to get git tags registering
     * PJD 17 Jul 2017 - Further work required to deal with tags which include '-' characters
     * PJD 13 Nov 2020 - Updated for Py3
+    * PJD 20 Jun 2023 - Updated getGitInfo to test gitTagErr.strip() == b'str' vs 'str' for py3
     ...
     """
     # Test current work dir
@@ -466,7 +468,8 @@ def getGitInfo(filePath):
     gitTagErr = p.stderr.read() ; # Catch tag-less error
     #print 'gitTagErr',gitTagErr
     del(filePath,p)
-    if gitTagErr.strip() == 'fatal: No names found, cannot describe anything.':
+
+    if gitTagErr.strip() == b'fatal: No names found, cannot describe anything.':
         gitLog.extend(['latest_tagPoint: None'])
     elif gitTag != '':
         # Example gitTag='CMOR-3.2.5\n' https://github.com/WCRP-CMIP/CMIP6_CVs/releases/tag/CMOR-3.2.5
